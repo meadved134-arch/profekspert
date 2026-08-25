@@ -1,0 +1,9 @@
+{
+  "admin_password": "admin",
+  "email_enabled": false,
+  "smtp_server": "smtp.yandex.ru",
+  "smtp_port": 465,
+  "smtp_user": "info@profexpert76.ru",
+  "smtp_password": "",
+  "recipient_email": "info@profexpert76.ru"
+}

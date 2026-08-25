@@ -141,17 +141,20 @@ class CustomHandler(SimpleHTTPRequestHandler):
         elif parsed_url.path == "/api/admin/login":
             content_length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(content_length).decode('utf-8')
-            data = json.loads(body)
+            try:
+                data = json.loads(body)
+            except Exception:
+                data = {}
             password = data.get("password", "")
 
             config = get_config()
             if password == config.get("admin_password", "admin"):
                 self._send_json({"success": True, "token": "admin-session-token-2026"})
             else:
-                self._send_json({"success": False, "error": "Неверный пароль администратора."}, status=401)
+                self._send_json({"success": False, "error": "Неверный пароль администратора."})
             return
 
-        super().do_POST()
+        self._send_json({"success": False, "error": "Not Found"}, status=404)
 
     def do_GET(self):
         parsed_url = urlparse(self.path)
