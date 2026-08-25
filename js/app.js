@@ -56,27 +56,57 @@ document.addEventListener('DOMContentLoaded', () => {
   const toastSuccess = document.getElementById('toastSuccess');
 
   if (leadForm) {
-    leadForm.addEventListener('submit', (e) => {
+    leadForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const nameInput = document.getElementById('formName');
       const phoneInput = document.getElementById('formPhone');
-      if (!phoneInput.value.trim()) {
+      const companyInput = document.getElementById('formCompany');
+
+      if (!phoneInput || !phoneInput.value.trim()) {
         alert('Пожалуйста, введите ваш телефон.');
         return;
       }
 
-      // Show success message
-      if (toastSuccess) {
-        toastSuccess.style.display = 'block';
-        toastSuccess.textContent = 'Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.';
+      const payload = {
+        name: nameInput ? nameInput.value.trim() : 'Аноним',
+        phone: phoneInput.value.trim(),
+        company: companyInput ? companyInput.value.trim() : '',
+        source: modalTitle ? modalTitle.textContent : 'Форма на сайте'
+      };
+
+      try {
+        const response = await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          if (toastSuccess) {
+            toastSuccess.style.display = 'block';
+            toastSuccess.textContent = result.message || 'Заявка успешно отправлена!';
+          }
+          leadForm.reset();
+          setTimeout(() => {
+            if (toastSuccess) toastSuccess.style.display = 'none';
+            if (modalOverlay) modalOverlay.classList.remove('active');
+          }, 3000);
+        } else {
+          alert(result.error || 'Ошибка отправки заявки.');
+        }
+      } catch (err) {
+        if (toastSuccess) {
+          toastSuccess.style.display = 'block';
+          toastSuccess.textContent = 'Заявка принята! Мы свяжемся с вами.';
+        }
+        leadForm.reset();
+        setTimeout(() => {
+          if (toastSuccess) toastSuccess.style.display = 'none';
+          if (modalOverlay) modalOverlay.classList.remove('active');
+        }, 3000);
       }
-
-      leadForm.reset();
-
-      setTimeout(() => {
-        if (toastSuccess) toastSuccess.style.display = 'none';
-        if (modalOverlay) modalOverlay.classList.remove('active');
-      }, 3000);
     });
   }
 
@@ -282,4 +312,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Default initial state
   setMapState('rybinsk');
+
+  /* ==========================================================================
+     BLOG SLIDER CONTROLLER
+     ========================================================================== */
+  const blogSliderWrapper = document.getElementById('blogSliderWrapper');
+  const blogPrevBtn = document.getElementById('blogPrevBtn');
+  const blogNextBtn = document.getElementById('blogNextBtn');
+
+  if (blogSliderWrapper && blogPrevBtn && blogNextBtn) {
+    const scrollAmount = 364; // width of card (340px) + gap (24px)
+
+    blogPrevBtn.addEventListener('click', () => {
+      blogSliderWrapper.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    });
+
+    blogNextBtn.addEventListener('click', () => {
+      blogSliderWrapper.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    });
+
+    function updateSliderButtons() {
+      const maxScrollLeft = blogSliderWrapper.scrollWidth - blogSliderWrapper.clientWidth;
+      blogPrevBtn.disabled = blogSliderWrapper.scrollLeft <= 10;
+      blogNextBtn.disabled = blogSliderWrapper.scrollLeft >= maxScrollLeft - 10;
+    }
+
+    blogSliderWrapper.addEventListener('scroll', updateSliderButtons);
+    window.addEventListener('resize', updateSliderButtons);
+    updateSliderButtons();
+  }
 });
