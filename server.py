@@ -10,7 +10,7 @@ import io
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.header import Header
-from http.server import SimpleHTTPRequestHandler, HTTPServer
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import urllib.request
 from urllib.parse import parse_qs, urlparse
 
@@ -714,5 +714,5 @@ if __name__ == "__main__":
     print(f"  - http://localhost:{PORT}/")
     print(f"  - http://localhost:{PORT}/admin/")
     print(f"==================================================")
-    httpd = HTTPServer(('0.0.0.0', PORT), CustomHandler)
+    httpd = ThreadingHTTPServer(('0.0.0.0', PORT), CustomHandler)
     httpd.serve_forever()
