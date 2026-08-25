@@ -5,7 +5,10 @@ import smtplib
 import csv
 import sys
 import re
+import threading
 from datetime import datetime
+from email.mime.text import MIMEText
+from email.header import Header
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -151,22 +154,45 @@ def send_email_notification(name, phone, company, created_at, source):
         print(f"[SMTP LOG] Email notification disabled. Lead from {name} ({phone}) saved to DB.")
         return
     try:
-        msg = f"Subject: Новая заявка с сайта ООО «ПрофЭксперт»\nContent-Type: text/plain; charset=utf-8\n\n"
-        msg += f"Новая заявка с сайта ООО «ПрофЭксперт»\n"
-        msg += f"-----------------------------------------\n"
-        msg += f"Имя: {name}\n"
-        msg += f"Телефон: {phone}\n"
-        msg += f"Компания: {company}\n"
-        msg += f"Дата: {created_at}\n"
-        msg += f"Источник: {source}\n"
-        
-        server = smtplib.SMTP_SSL(config["smtp_server"], config["smtp_port"])
-        server.login(config["smtp_user"], config["smtp_password"])
-        server.sendmail(config["smtp_user"], config["recipient_email"], msg.encode('utf-8'))
-        server.quit()
-        print(f"[SMTP SUCCESS] Notification email sent to {config['recipient_email']}")
+        body = f"""Новая заявка с сайта ООО «ПрофЭксперт»
+-----------------------------------------
+Имя клиента: {name}
+Телефон: {phone}
+Компания / Отрасль: {company if company else 'Не указано'}
+Дата и время: {created_at}
+Источник: {source}
+-----------------------------------------
+Заявка также сохранена в панели управления: http://localhost:8085/admin/
+"""
+        msg = MIMEText(body, 'plain', 'utf-8')
+        msg['Subject'] = Header(f"🔥 Новая заявка: {name} ({phone}) — ООО «ПрофЭксперт»", 'utf-8')
+        msg['From'] = config["smtp_user"]
+        msg['To'] = config["recipient_email"]
+
+        smtp_server = config.get("smtp_server", "smtp.yandex.ru")
+        smtp_port = config.get("smtp_port", 465)
+
+        try:
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=8)
+            server.login(config["smtp_user"], config["smtp_password"])
+            server.sendmail(config["smtp_user"], [config["recipient_email"]], msg.as_string())
+            server.quit()
+            print(f"[SMTP SUCCESS] Notification email sent to {config['recipient_email']}")
+            return
+        except Exception as e1:
+            # Fallback to port 587 STARTTLS
+            try:
+                server = smtplib.SMTP(smtp_server, 587, timeout=8)
+                server.starttls()
+                server.login(config["smtp_user"], config["smtp_password"])
+                server.sendmail(config["smtp_user"], [config["recipient_email"]], msg.as_string())
+                server.quit()
+                print(f"[SMTP SUCCESS via 587] Notification email sent to {config['recipient_email']}")
+                return
+            except Exception as e2:
+                print(f"[SMTP ERROR] Failed to send email via 465 ({e1}) and 587 ({e2})")
     except Exception as e:
-        print(f"[SMTP ERROR] Failed to send email: {e}")
+        print(f"[SMTP ERROR] Failed to prepare email: {e}")
 
 def get_all_articles():
     conn = sqlite3.connect(DB_FILE)
@@ -480,7 +506,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
                 return
 
             lead_id, created_at = save_lead(name, phone, company, source)
-            send_email_notification(name, phone, company, created_at, source)
+            threading.Thread(target=send_email_notification, args=(name, phone, company, created_at, source), daemon=True).start()
 
             self._send_json({"success": True, "message": "Заявка успешно отправлена! Эксперт свяжется с вами.", "id": lead_id})
             return

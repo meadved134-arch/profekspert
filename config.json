@@ -1,9 +1,9 @@
 {
   "admin_password": "admin",
-  "email_enabled": false,
+  "email_enabled": true,
   "smtp_server": "smtp.yandex.ru",
   "smtp_port": 465,
   "smtp_user": "yablokoffkirill@yandex.ru",
-  "smtp_password": "",
+  "smtp_password": "gkizoyrwjxfxynrh",
   "recipient_email": "yablokoffkirill@yandex.ru"
 }
