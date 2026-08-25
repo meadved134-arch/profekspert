@@ -168,8 +168,8 @@ def send_email_notification(name, phone, company, created_at, source):
 """
         msg = MIMEText(body, 'plain', 'utf-8')
         msg['Subject'] = Header(f"🔥 Новая заявка: {name} ({phone}) — ООО «ПрофЭксперт»", 'utf-8')
-        msg['From'] = config["smtp_user"]
-        msg['To'] = config["recipient_email"]
+        recipients = [r.strip() for r in str(config.get("recipient_email", "")).split(',') if r.strip()]
+        msg['To'] = ", ".join(recipients)
 
         smtp_server = config.get("smtp_server", "smtp.yandex.ru")
         smtp_port = config.get("smtp_port", 465)
@@ -177,7 +177,7 @@ def send_email_notification(name, phone, company, created_at, source):
         try:
             server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=8)
             server.login(config["smtp_user"], config["smtp_password"])
-            server.sendmail(config["smtp_user"], [config["recipient_email"]], msg.as_string())
+            server.sendmail(config["smtp_user"], recipients, msg.as_string())
             server.quit()
             print(f"[SMTP SUCCESS] Notification email sent to {config['recipient_email']}")
             return
@@ -187,7 +187,7 @@ def send_email_notification(name, phone, company, created_at, source):
                 server = smtplib.SMTP(smtp_server, 587, timeout=8)
                 server.starttls()
                 server.login(config["smtp_user"], config["smtp_password"])
-                server.sendmail(config["smtp_user"], [config["recipient_email"]], msg.as_string())
+                server.sendmail(config["smtp_user"], recipients, msg.as_string())
                 server.quit()
                 print(f"[SMTP SUCCESS via 587] Notification email sent to {config['recipient_email']}")
             except Exception as e2:
