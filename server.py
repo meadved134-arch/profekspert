@@ -120,7 +120,7 @@ def init_db():
 def save_lead(name, phone, company, source="Сайт"):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    created_at = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     cursor.execute('''
         INSERT INTO leads (created_at, name, phone, company, source, status)
         VALUES (?, ?, ?, ?, ?, 'NEW')
@@ -611,7 +611,16 @@ class CustomHandler(SimpleHTTPRequestHandler):
             writer = csv.writer(string_buffer, delimiter=';')
             writer.writerow(["ID", "Дата и время", "Имя клиента", "Телефон", "Компания", "Источник", "Статус"])
             for l in leads:
-                writer.writerow([l["id"], l["created_at"], l["name"], l["phone"], l["company"], l["source"], l["status"]])
+                raw_date = l.get("created_at") or ""
+                try:
+                    if "-" in raw_date and len(raw_date) >= 19:
+                        dt = datetime.strptime(raw_date[:19], "%Y-%m-%d %H:%M:%S")
+                        formatted_date = dt.strftime("%d.%m.%Y %H:%M:%S")
+                    else:
+                        formatted_date = raw_date
+                except Exception:
+                    formatted_date = raw_date
+                writer.writerow([l["id"], formatted_date, l["name"], l["phone"], l["company"], l["source"], l["status"]])
 
             csv_bytes = string_buffer.getvalue().encode('utf-8-sig')
             self.wfile.write(csv_bytes)
