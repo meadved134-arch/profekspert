@@ -200,9 +200,15 @@ def send_telegram_notification(name, phone, company, created_at, source):
     if not config.get("telegram_enabled"):
         return
     token = config.get("telegram_bot_token", "").strip()
-    chat_id = config.get("telegram_chat_id", "").strip()
-    if not token or not chat_id:
+    raw_chat_ids = config.get("telegram_chat_id", "")
+    if not token or not raw_chat_ids:
         return
+
+    # Support single ID, comma-separated string, or list
+    if isinstance(raw_chat_ids, list):
+        chat_ids = [str(cid).strip() for cid in raw_chat_ids if str(cid).strip()]
+    else:
+        chat_ids = [cid.strip() for cid in str(raw_chat_ids).split(',') if cid.strip()]
 
     text = f"""🔥 *НОВАЯ ЗАЯВКА С САЙТА*
 ━━━━━━━━━━━━━━━━━━━━
@@ -214,22 +220,23 @@ def send_telegram_notification(name, phone, company, created_at, source):
 ━━━━━━━━━━━━━━━━━━━━
 💾 Заявка сохранена в базе данных"""
 
-    try:
-        url = f"https://api.telegram.org/bot{token}/sendMessage"
-        payload = json.dumps({
-            "chat_id": chat_id,
-            "text": text,
-            "parse_mode": "Markdown"
-        }).encode('utf-8')
-        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=10) as res:
-            res_data = json.loads(res.read().decode('utf-8'))
-            if res_data.get("ok"):
-                print(f"[TG SUCCESS] Telegram notification sent to chat_id {chat_id}")
-            else:
-                print(f"[TG ERROR] Telegram response error: {res_data}")
-    except Exception as e:
-        print(f"[TG ERROR] Failed to send telegram notification: {e}")
+    for chat_id in chat_ids:
+        try:
+            url = f"https://api.telegram.org/bot{token}/sendMessage"
+            payload = json.dumps({
+                "chat_id": chat_id,
+                "text": text,
+                "parse_mode": "Markdown"
+            }).encode('utf-8')
+            req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=10) as res:
+                res_data = json.loads(res.read().decode('utf-8'))
+                if res_data.get("ok"):
+                    print(f"[TG SUCCESS] Telegram notification sent to chat_id {chat_id}")
+                else:
+                    print(f"[TG ERROR] Telegram response error for {chat_id}: {res_data}")
+        except Exception as e:
+            print(f"[TG ERROR] Failed to send telegram notification to {chat_id}: {e}")
 
 def get_all_articles():
     conn = sqlite3.connect(DB_FILE)
