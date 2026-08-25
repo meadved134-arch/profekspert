@@ -342,29 +342,29 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSliderButtons();
 
     async function fetchPublishedArticles() {
-      const blogGrid = blogSliderWrapper.querySelector('.blog-grid');
+      // Look for .blog-grid both inside the wrapper and anywhere in the document
+      const blogGrid = blogSliderWrapper.querySelector('.blog-grid') || document.querySelector('.blog-grid');
       if (!blogGrid) return;
       try {
         const res = await fetch('/api/articles');
+        if (!res.ok) return;
         const data = await res.json();
-        if (data.success && data.articles && data.articles.length > 0) {
-          blogGrid.innerHTML = data.articles.map(a => `
-            <a href="${a.url}" target="_blank" rel="noopener" class="blog-card">
-              <div class="blog-card-content">
-                <h3 class="blog-card-title">${escapeHtml(a.title)}</h3>
-                <p class="blog-card-desc">Экспертный разбор требований по охране труда и промышленной безопасности.</p>
+        if (data.success && Array.isArray(data.articles) && data.articles.length > 0) {
+          blogGrid.innerHTML = data.articles.map(a => {
+            // Ensure URL is root-relative for links from index.html
+            const href = a.url.startsWith('/') ? a.url : '/' + a.url;
+            return `<a href="${href}" target="_blank" rel="noopener" class="blog-card">
+              <div>
+                <h3>${escapeHtml(a.title)}</h3>
               </div>
-              <div class="blog-card-footer">
-                <span>${escapeHtml(a.created_at)}</span>
-                <span class="dot">•</span>
-                <span>${escapeHtml(a.badge)}</span>
-              </div>
-            </a>
-          `).join('');
+              <div class="blog-footer">${escapeHtml(a.created_at)} • ${escapeHtml(a.badge)}</div>
+            </a>`;
+          }).join('');
           updateSliderButtons();
         }
       } catch (err) {
-        // Keep static fallback cards
+        console.error('[Blog Slider] Failed to load articles:', err);
+        // Keep static fallback cards on fetch error
       }
     }
 
