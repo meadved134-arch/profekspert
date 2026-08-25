@@ -616,34 +616,83 @@
         loadArticles();
       });
 
+      const DEFAULT_ARTICLES = [
+        {
+          id: 1,
+          title: 'Изменения в законодательстве по охране труда в 2026 году',
+          badge: 'СОУТ и ЛНА',
+          created_at: '25 АВГУСТА 2026',
+          read_time: '7 МИН ЧТЕНИЯ',
+          author: 'Главный инженер ООО «ПрофЭксперт»',
+          slug: 'article-template',
+          url: 'blog/article-template.html',
+          content_json: JSON.stringify([
+            { type: 'h2', value: '1. Главные законодательные акценты 2026 года' },
+            { type: 'p', value: 'В 2026 году вступил в силу обновленный комплекс требований Роструда и Минтруда РФ.' },
+            { type: 'quote', value: 'Главный приоритет 2026 года — переориентация от формального ведения журналов к реальной оценке рисков.', author: 'Эксперт' }
+          ])
+        },
+        {
+          id: 2,
+          title: 'Подготовка к проверкам ГИТ и Роструда: пошаговый чек-лист',
+          badge: 'Проверки ГИТ',
+          created_at: '24 АВГУСТА 2026',
+          read_time: '6 МИН ЧТЕНИЯ',
+          author: 'Ведущий аудитор ООО «ПрофЭксперт»',
+          slug: 'podgotovka-k-proverkam',
+          url: 'blog/podgotovka-k-proverkam.html',
+          content_json: JSON.stringify([
+            { type: 'h2', value: '1. С чего начать подготовку к инспекции' },
+            { type: 'p', value: 'Плановые и внеплановые проверки Государственной инспекции труда (ГИТ) требуют тщательной сверки документов.' },
+            { type: 'quote', value: 'Качественно подготовленный комплект документов предотвращает штрафы до 200 000 рублей.', author: 'Ведущий аудитор' }
+          ])
+        },
+        {
+          id: 3,
+          title: 'Производственная безопасность на предприятии: как исключить травматизм',
+          badge: 'Безопасность',
+          created_at: '23 АВГУСТА 2026',
+          read_time: '8 МИН ЧТЕНИЯ',
+          author: 'Специалист по техбезопасности',
+          slug: 'proizvodstvennaya-bezopasnost',
+          url: 'blog/proizvodstvennaya-bezopasnost.html',
+          content_json: JSON.stringify([
+            { type: 'h2', value: '1. Системный подход к нулевому травматизму' },
+            { type: 'p', value: 'Внедрение стандартов Vision Zero позволяет сократить производственный травматизм на 95%.' },
+            { type: 'quote', value: 'Безопасность труда — это экономия бюджета предприятия и защита персонала.', author: 'Специалист' }
+          ])
+        }
+      ];
+
       async function loadArticles() {
         let serverArticles = [];
         try {
           const res = await fetch('/api/articles');
           const data = await res.json();
-          if (data.success && data.articles) {
+          if (data.success && Array.isArray(data.articles) && data.articles.length > 0) {
+            // Server returned articles — use them as main source, replace DEFAULT_ARTICLES
             serverArticles = data.articles;
+            // Merge with any local-only articles (those not yet synced to server)
+            const localOnly = getStoredCustomArticles().filter(la =>
+              !serverArticles.some(sa => sa.id === la.id || sa.slug === la.slug)
+            );
+            cachedArticles = [...serverArticles, ...localOnly];
+            renderArticles(cachedArticles);
+            if (articlesCount) articlesCount.textContent = cachedArticles.length;
+            return;
           }
         } catch (err) {
-          // fallback
+          // Server offline or file:// protocol — fall through to local fallback
         }
 
+        // Fallback: merge DEFAULT_ARTICLES with any locally created ones
         const localArticles = getStoredCustomArticles();
-        
-        // Merge without duplicates
         const allArticles = [...DEFAULT_ARTICLES];
-        
-        serverArticles.forEach(sa => {
-          if (!allArticles.some(a => a.id === sa.id || a.slug === sa.slug)) {
-            allArticles.push(sa);
-          }
-        });
         localArticles.forEach(la => {
           if (!allArticles.some(a => a.id === la.id || a.slug === la.slug)) {
             allArticles.push(la);
           }
         });
-
         cachedArticles = allArticles;
         renderArticles(allArticles);
       }
