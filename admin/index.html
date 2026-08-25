@@ -268,25 +268,7 @@
             </thead>
             <tbody id="articlesTableBody">
               <tr>
-                <td>1</td>
-                <td><strong>Изменения в законодательстве по охране труда в 2026 году</strong></td>
-                <td>СОУТ и ЛНА</td>
-                <td>25.08.2026</td>
-                <td><a href="../blog/article-template.html" target="_blank">Просмотр</a></td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td><strong>Подготовка к проверкам ГИТ и Роструда: пошаговый чек-лист</strong></td>
-                <td>Проверки ГИТ</td>
-                <td>24.08.2026</td>
-                <td><a href="../blog/podgotovka-k-proverkam.html" target="_blank">Просмотр</a></td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td><strong>Производственная безопасность на предприятии: как исключить травматизм</strong></td>
-                <td>Безопасность</td>
-                <td>23.08.2026</td>
-                <td><a href="../blog/proizvodstvennaya-bezopasnost.html" target="_blank">Просмотр</a></td>
+                <td colspan="5" style="text-align: center; color: #888; padding: 24px;">Загрузка списка статей...</td>
               </tr>
             </tbody>
           </table>
@@ -598,59 +580,90 @@
         }
       });
 
+      const DEFAULT_ARTICLES = [
+        {
+          id: 1,
+          title: 'Изменения в законодательстве по охране труда в 2026 году',
+          badge: 'СОУТ и ЛНА',
+          created_at: '25 АВГУСТА 2026',
+          read_time: '7 МИН ЧТЕНИЯ',
+          author: 'Главный инженер ООО «ПрофЭксперт»',
+          slug: 'article-template',
+          url: 'blog/article-template.html',
+          content_json: JSON.stringify([
+            { type: 'h2', value: '1. Главные законодательные акценты 2026 года' },
+            { type: 'p', value: 'В 2026 году вступил в силу обновленный комплекс требований Роструда и Минтруда РФ, касающийся порядка проведения СОУТ, учета микротравм и автоматизации ЛНА.' },
+            { type: 'quote', value: 'Главный приоритет 2026 года — переориентация от формального ведения журналов к реальной оценке рисков на каждом рабочем месте.', author: 'Эксперт по аутсорсингу охраны труда' }
+          ])
+        },
+        {
+          id: 2,
+          title: 'Подготовка к проверкам ГИТ и Роструда: пошаговый чек-лист',
+          badge: 'Проверки ГИТ',
+          created_at: '24 АВГУСТА 2026',
+          read_time: '6 МИН ЧТЕНИЯ',
+          author: 'Ведущий аудитор ООО «ПрофЭксперт»',
+          slug: 'podgotovka-k-proverkam',
+          url: 'blog/podgotovka-k-proverkam.html',
+          content_json: JSON.stringify([
+            { type: 'h2', value: '1. С чего начать подготовку к инспекции' },
+            { type: 'p', value: 'Плановые и внеплановые проверки Государственной инспекции труда (ГИТ) требуют тщательной сверки наличия и корректности заполнения кадровых и охранотрудовых документов.' },
+            { type: 'quote', value: 'Качественно подготовленный комплект документов предотвращает штрафы до 200 000 рублей.', author: 'Ведущий аудитор' }
+          ])
+        },
+        {
+          id: 3,
+          title: 'Производственная безопасность на предприятии: как исключить травматизм',
+          badge: 'Безопасность',
+          created_at: '23 АВГУСТА 2026',
+          read_time: '8 МИН ЧТЕНИЯ',
+          author: 'Специалист по техбезопасности',
+          slug: 'proizvodstvennaya-bezopasnost',
+          url: 'blog/proizvodstvennaya-bezopasnost.html',
+          content_json: JSON.stringify([
+            { type: 'h2', value: '1. Системный подход к нулевому травматизму' },
+            { type: 'p', value: 'Внедрение международных и национальных стандартов Vision Zero позволяет сократить производственный травматизм на 95%.' },
+            { type: 'quote', value: 'Безопасность труда — это экономия бюджета предприятия и защита персонала.', author: 'Специалист по техбезопасности' }
+          ])
+        }
+      ];
+
       async function loadArticles() {
         try {
           const res = await fetch('/api/articles');
           const data = await res.json();
-          if (data.success && data.articles) {
+          if (data.success && data.articles && data.articles.length > 0) {
             cachedArticles = data.articles;
             renderArticles(data.articles);
+            return;
           }
         } catch (err) {
-          // Default state
+          // Fallback for direct file:// browser viewing
         }
+        cachedArticles = DEFAULT_ARTICLES;
+        renderArticles(DEFAULT_ARTICLES);
       }
 
       function renderArticles(articles) {
-        if (articlesCount) articlesCount.textContent = articles.length + 3;
-        const defaultRows = `
+        if (articlesCount) articlesCount.textContent = articles.length;
+        if (!articles || articles.length === 0) {
+          articlesTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">Статей пока нет. Нажмите "+ Создать новую статью".</td></tr>';
+          return;
+        }
+
+        articlesTableBody.innerHTML = articles.map((a, idx) => `
           <tr>
-            <td>1</td>
-            <td><strong>Изменения в законодательстве по охране труда в 2026 году</strong></td>
-            <td>СОУТ и ЛНА</td>
-            <td>25.08.2026</td>
-            <td><a href="../blog/article-template.html" target="_blank" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">👁️ Просмотр</a></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td><strong>Подготовка к проверкам ГИТ и Роструда: пошаговый чек-лист</strong></td>
-            <td>Проверки ГИТ</td>
-            <td>24.08.2026</td>
-            <td><a href="../blog/podgotovka-k-proverkam.html" target="_blank" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">👁️ Просмотр</a></td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td><strong>Производственная безопасность на предприятии: как исключить травматизм</strong></td>
-            <td>Безопасность</td>
-            <td>23.08.2026</td>
-            <td><a href="../blog/proizvodstvennaya-bezopasnost.html" target="_blank" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">👁️ Просмотр</a></td>
-          </tr>
-        `;
-        const newRows = articles.map((a, idx) => `
-          <tr>
-            <td>${idx + 4}</td>
+            <td><strong>#${a.id}</strong></td>
             <td><strong>${escapeHtml(a.title)}</strong></td>
-            <td>${escapeHtml(a.badge)}</td>
+            <td><span class="status-badge" style="background:#e8f0fe; color:#1a73e8;">${escapeHtml(a.badge)}</span></td>
             <td>${escapeHtml(a.created_at)}</td>
             <td style="display:flex; gap:6px;">
-              <a href="../${a.url}" target="_blank" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">👁️</a>
+              <a href="../${a.url}" target="_blank" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">👁️ Просмотр</a>
               <button onclick="editArticle(${a.id})" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">✏️ Редактировать</button>
               <button onclick="deleteArticle(${a.id})" class="btn btn-secondary" style="font-size:11px; padding:4px 8px; color:red; border-color:#f8d7da;">🗑️ Удалить</button>
             </td>
           </tr>
         `).join('');
-
-        articlesTableBody.innerHTML = defaultRows + newRows;
       }
 
       window.editArticle = function(id) {
