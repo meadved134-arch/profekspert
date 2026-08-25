@@ -121,7 +121,7 @@ def send_email_notification(name, phone, company, created_at, source):
 def get_all_articles():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, created_at, title, badge, read_time, author, slug FROM articles ORDER BY id DESC")
+    cursor.execute("SELECT id, created_at, title, badge, read_time, author, slug, content_json FROM articles ORDER BY id DESC")
     rows = cursor.fetchall()
     conn.close()
     articles = []
@@ -134,6 +134,7 @@ def get_all_articles():
             "read_time": r[4],
             "author": r[5],
             "slug": r[6],
+            "content_json": r[7],
             "url": f"blog/{r[6]}.html"
         })
     return articles
@@ -411,6 +412,41 @@ class CustomHandler(SimpleHTTPRequestHandler):
 
             slug, url = save_article(title, badge, read_time, author, created_at, blocks)
             self._send_json({"success": True, "slug": slug, "url": url, "message": "Статья успешно создана!"})
+            return
+
+        elif parsed_url.path == "/api/articles/update":
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8')
+            data = json.loads(body)
+            article_id = data.get("id")
+            title = data.get("title", "").strip()
+            badge = data.get("badge", "СТАТЬЯ").strip()
+            read_time = data.get("read_time", "5 МИН ЧТЕНИЯ").strip()
+            author = data.get("author", "ГЛАВНЫЙ ИНЖЕНЕР").strip()
+            created_at = data.get("created_at") or datetime.now().strftime("%d АВГУСТА %Y").upper()
+            blocks = data.get("blocks", [])
+
+            if not article_id or not title:
+                self._send_json({"success": False, "error": "Заполните данные для обновления."}, status=400)
+                return
+
+            slug = update_article(article_id, title, badge, read_time, author, created_at, blocks)
+            if slug:
+                self._send_json({"success": True, "slug": slug, "message": "Статья успешно обновлена!"})
+            else:
+                self._send_json({"success": False, "error": "Статья не найдена."}, status=44)
+            return
+
+        elif parsed_url.path == "/api/articles/delete":
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8')
+            data = json.loads(body)
+            article_id = data.get("id")
+            if article_id:
+                delete_article(article_id)
+                self._send_json({"success": True, "message": "Статья успешно удалена!"})
+            else:
+                self._send_json({"success": False, "error": "Не указан ID статьи."}, status=400)
             return
 
         self._send_json({"success": False, "error": "Not Found"}, status=404)

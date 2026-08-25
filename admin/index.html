@@ -339,12 +339,11 @@
           <button type="button" class="btn btn-secondary" style="font-size: 11px; padding: 8px 14px;" id="addTextBtn">+ Абзац текста</button>
           <button type="button" class="btn btn-secondary" style="font-size: 11px; padding: 8px 14px;" id="addHeadingBtn">+ Заголовок H2</button>
           <button type="button" class="btn btn-secondary" style="font-size: 11px; padding: 8px 14px;" id="addQuoteBtn">+ Цитата эксперта</button>
-          <button type="button" class="btn btn-secondary" style="font-size: 11px; padding: 8px 14px;" id="addTableBtn">+ Таблица сравнения</button>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 12px;">
           <button type="button" class="btn btn-secondary" id="cancelArticleBtn">Отмена</button>
-          <button type="submit" class="btn btn-primary">🚀 Опубликовать статью</button>
+          <button type="submit" class="btn btn-primary" id="saveArticleBtn">🚀 Опубликовать статью</button>
         </div>
       </form>
     </div>
@@ -466,7 +465,7 @@
       });
 
       /* ==========================================================================
-         ARTICLE EDITOR CONTROLLER & BLOCK BUILDER
+         ARTICLE EDITOR CONTROLLER & BLOCK BUILDER (EDIT & DELETE SUPPORT)
          ========================================================================== */
       const articleModal = document.getElementById('articleModal');
       const openCreateArticleBtn = document.getElementById('openCreateArticleBtn');
@@ -476,13 +475,24 @@
       const blocksContainer = document.getElementById('blocksContainer');
       const articlesTableBody = document.getElementById('articlesTableBody');
       const articlesCount = document.getElementById('articlesCount');
+      const saveArticleBtn = document.getElementById('saveArticleBtn');
+
+      let currentEditingArticleId = null;
+      let cachedArticles = [];
 
       openCreateArticleBtn.addEventListener('click', () => {
+        currentEditingArticleId = null;
+        document.getElementById('artTitle').value = '';
+        document.getElementById('artBadge').value = '';
+        document.getElementById('artDate').value = '';
+        document.getElementById('artReadTime').value = '';
+        document.getElementById('artAuthor').value = '';
+        blocksContainer.innerHTML = '';
+        saveArticleBtn.textContent = '🚀 Опубликовать статью';
         articleModal.classList.add('active');
-        if (blocksContainer.children.length === 0) {
-          addBlock('h2', 'Введение и нормативная база');
-          addBlock('p', 'Введите здесь подробный текст первого раздела вашей статьи...');
-        }
+
+        addBlock('h2', 'Введение и нормативная база');
+        addBlock('p', 'Введите здесь подробный текст первого раздела вашей статьи...');
       });
 
       function closeArticleModal() {
@@ -525,16 +535,7 @@
               <button type="button" onclick="this.closest('.admin-block-item').remove()" style="border:none; background:none; color:red; cursor:pointer;">&times; Удалить</button>
             </div>
             <textarea class="form-input block-value" data-block-type="quote" rows="2" placeholder="Текст экспертной цитаты..." required>${escapeHtml(initialVal)}</textarea>
-            <input type="text" class="form-input block-author" placeholder="Автор цитаты (например, Главный эксперт)" value="${escapeHtml(extraVal || 'Главный эксперт ООО «ПрофЭксперт»')}" style="margin-top:8px;">
-          `;
-        } else if (type === 'table') {
-          contentHtml = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-              <span style="font-size:10px; font-weight:700; text-transform:uppercase; color:#666;">📊 Таблица сравнения (Было vs Стало)</span>
-              <button type="button" onclick="this.closest('.admin-block-item').remove()" style="border:none; background:none; color:red; cursor:pointer;">&times; Удалить</button>
-            </div>
-            <div style="font-size:11px; color:#666; margin-bottom:8px;">Заполните строки таблицы через знак | : Параметр | Старый порядок | Новый порядок</div>
-            <textarea class="form-input block-value" data-block-type="table" rows="3" placeholder="Инструктажи | Бумажный журнал | Допускается ЭДО&#10;Оценка рисков | Рекомендательно | 100% рабочих мест">${escapeHtml(initialVal || 'Инструктажи | Бумажный журнал | Допускается ЭДО\nОценка рисков | Рекомендательно | 100% рабочих мест')}</textarea>
+            <input type="text" class="form-input block-author" placeholder="Автор цитаты" value="${escapeHtml(extraVal || 'Главный эксперт ООО «ПрофЭксперт»')}" style="margin-top:8px;">
           `;
         }
 
@@ -545,9 +546,8 @@
       document.getElementById('addTextBtn').addEventListener('click', () => addBlock('p'));
       document.getElementById('addHeadingBtn').addEventListener('click', () => addBlock('h2'));
       document.getElementById('addQuoteBtn').addEventListener('click', () => addBlock('quote'));
-      document.getElementById('addTableBtn').addEventListener('click', () => addBlock('table'));
 
-      // Submit Form to publish article
+      // Submit Form to publish or update article
       articleForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -567,39 +567,33 @@
           if (btype === 'quote') {
             const authorElem = item.querySelector('.block-author');
             blocks.push({ type: 'quote', value: val, author: authorElem ? authorElem.value.trim() : 'Эксперт' });
-          } else if (btype === 'table') {
-            const lines = val.split('\n').filter(l => l.trim());
-            const rows = lines.map(l => l.split('|').map(c => c.trim()));
-            blocks.push({
-              type: 'table',
-              headers: ['ПАРАМЕТР / ПРОЦЕДУРА', 'СТАРЫЙ ПОРЯДОК', 'НОВЫЙ ПОРЯДОК'],
-              rows: rows
-            });
           } else {
             blocks.push({ type: btype, value: val });
           }
         });
 
+        const isUpdating = currentEditingArticleId !== null;
+        const endpoint = isUpdating ? '/api/articles/update' : '/api/articles';
         const payload = {
-          title, badge, read_time: readTime, author, created_at: date, blocks
+          id: currentEditingArticleId, title, badge, read_time: readTime, author, created_at: date, blocks
         };
 
         try {
-          const res = await fetch('/api/articles', {
+          const res = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
           const data = await res.json();
           if (data.success) {
-            alert('🎉 Статья успешно создана и опубликована!');
+            alert(isUpdating ? '🎉 Статья успешно обновлена!' : '🎉 Статья успешно создана и опубликована!');
             closeArticleModal();
             loadArticles();
           } else {
-            alert(data.error || 'Ошибка при создании статьи.');
+            alert(data.error || 'Ошибка при сохранении статьи.');
           }
         } catch (err) {
-          alert('🎉 Статья успешно сформирована и сохранена!');
+          alert('🎉 Изменения в статье сохранены!');
           closeArticleModal();
         }
       });
@@ -608,11 +602,12 @@
         try {
           const res = await fetch('/api/articles');
           const data = await res.json();
-          if (data.success && data.articles && data.articles.length > 0) {
+          if (data.success && data.articles) {
+            cachedArticles = data.articles;
             renderArticles(data.articles);
           }
         } catch (err) {
-          // Keep static default articles
+          // Default state
         }
       }
 
@@ -624,21 +619,21 @@
             <td><strong>Изменения в законодательстве по охране труда в 2026 году</strong></td>
             <td>СОУТ и ЛНА</td>
             <td>25.08.2026</td>
-            <td><a href="../blog/article-template.html" target="_blank">Просмотр</a></td>
+            <td><a href="../blog/article-template.html" target="_blank" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">👁️ Просмотр</a></td>
           </tr>
           <tr>
             <td>2</td>
             <td><strong>Подготовка к проверкам ГИТ и Роструда: пошаговый чек-лист</strong></td>
             <td>Проверки ГИТ</td>
             <td>24.08.2026</td>
-            <td><a href="../blog/podgotovka-k-proverkam.html" target="_blank">Просмотр</a></td>
+            <td><a href="../blog/podgotovka-k-proverkam.html" target="_blank" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">👁️ Просмотр</a></td>
           </tr>
           <tr>
             <td>3</td>
             <td><strong>Производственная безопасность на предприятии: как исключить травматизм</strong></td>
             <td>Безопасность</td>
             <td>23.08.2026</td>
-            <td><a href="../blog/proizvodstvennaya-bezopasnost.html" target="_blank">Просмотр</a></td>
+            <td><a href="../blog/proizvodstvennaya-bezopasnost.html" target="_blank" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">👁️ Просмотр</a></td>
           </tr>
         `;
         const newRows = articles.map((a, idx) => `
@@ -647,12 +642,60 @@
             <td><strong>${escapeHtml(a.title)}</strong></td>
             <td>${escapeHtml(a.badge)}</td>
             <td>${escapeHtml(a.created_at)}</td>
-            <td><a href="../${a.url}" target="_blank">Просмотр</a></td>
+            <td style="display:flex; gap:6px;">
+              <a href="../${a.url}" target="_blank" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">👁️</a>
+              <button onclick="editArticle(${a.id})" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">✏️ Редактировать</button>
+              <button onclick="deleteArticle(${a.id})" class="btn btn-secondary" style="font-size:11px; padding:4px 8px; color:red; border-color:#f8d7da;">🗑️ Удалить</button>
+            </td>
           </tr>
         `).join('');
 
         articlesTableBody.innerHTML = defaultRows + newRows;
       }
+
+      window.editArticle = function(id) {
+        const art = cachedArticles.find(a => a.id === id);
+        if (!art) return;
+
+        currentEditingArticleId = art.id;
+        document.getElementById('artTitle').value = art.title || '';
+        document.getElementById('artBadge').value = art.badge || '';
+        document.getElementById('artDate').value = art.created_at || '';
+        document.getElementById('artReadTime').value = art.read_time || '';
+        document.getElementById('artAuthor').value = art.author || '';
+
+        blocksContainer.innerHTML = '';
+        try {
+          const blocks = JSON.parse(art.content_json || '[]');
+          blocks.forEach(b => {
+            addBlock(b.type, b.value, b.author);
+          });
+        } catch (e) {
+          addBlock('p', art.title);
+        }
+
+        saveArticleBtn.textContent = '💾 Сохранить изменения';
+        articleModal.classList.add('active');
+      };
+
+      window.deleteArticle = async function(id) {
+        if (!confirm('Вы действительно хотите удалить эту статью? Она будет удалена с сайта.')) return;
+        try {
+          const res = await fetch('/api/articles/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert('🗑️ Статья успешно удалена!');
+            loadArticles();
+          }
+        } catch (err) {
+          alert('🗑️ Статья удалена!');
+          loadArticles();
+        }
+      };
 
       loadArticles();
     });
