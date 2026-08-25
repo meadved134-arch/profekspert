@@ -4,6 +4,7 @@ import sqlite3
 import smtplib
 import csv
 import sys
+import re
 from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
@@ -375,15 +376,28 @@ def generate_article_html(title, badge, read_time, author, created_at, blocks, s
         f.write(html_content)
     return f"blog/{slug}.html"
 
-def save_article(title, badge, read_time, author, created_at, blocks):
-    import re
-    # generate slug
-    slug = re.sub(r'[^a-zA-Z0-9]', '-', title.lower()).strip('-')
-    if not slug or len(slug) < 3:
-        slug = f"article-{int(datetime.now().timestamp())}"
-    else:
-        slug = f"{slug[:40]}-{int(datetime.now().timestamp()) % 10000}"
+CYRILLIC_TO_LATIN = {
+    'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y',
+    'к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f',
+    'х':'h','ц':'ts','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'
+}
 
+def make_slug(title):
+    res = ""
+    for ch in title.lower():
+        if ch in CYRILLIC_TO_LATIN:
+            res += CYRILLIC_TO_LATIN[ch]
+        elif ch.isalnum() and ch.isascii():
+            res += ch
+        else:
+            res += '-'
+    res = re.sub(r'-+', '-', res).strip('-')
+    if not res:
+        res = "article"
+    return f"{res[:40]}-{int(datetime.now().timestamp()) % 10000}"
+
+def save_article(title, badge, read_time, author, created_at, blocks):
+    slug = make_slug(title)
     url = generate_article_html(title, badge, read_time, author, created_at, blocks, slug)
 
     conn = sqlite3.connect(DB_FILE)

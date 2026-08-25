@@ -340,5 +340,38 @@ document.addEventListener('DOMContentLoaded', () => {
     blogSliderWrapper.addEventListener('scroll', updateSliderButtons);
     window.addEventListener('resize', updateSliderButtons);
     updateSliderButtons();
+
+    async function fetchPublishedArticles() {
+      const blogGrid = blogSliderWrapper.querySelector('.blog-grid');
+      if (!blogGrid) return;
+      try {
+        const res = await fetch('/api/articles');
+        const data = await res.json();
+        if (data.success && data.articles && data.articles.length > 0) {
+          blogGrid.innerHTML = data.articles.map(a => `
+            <a href="${a.url}" target="_blank" rel="noopener" class="blog-card">
+              <div class="blog-card-content">
+                <h3 class="blog-card-title">${escapeHtml(a.title)}</h3>
+                <p class="blog-card-desc">Экспертный разбор требований по охране труда и промышленной безопасности.</p>
+              </div>
+              <div class="blog-card-footer">
+                <span>${escapeHtml(a.created_at)}</span>
+                <span class="dot">•</span>
+                <span>${escapeHtml(a.badge)}</span>
+              </div>
+            </a>
+          `).join('');
+          updateSliderButtons();
+        }
+      } catch (err) {
+        // Keep static fallback cards
+      }
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    fetchPublishedArticles();
   }
 });
