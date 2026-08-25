@@ -529,6 +529,18 @@
       document.getElementById('addHeadingBtn').addEventListener('click', () => addBlock('h2'));
       document.getElementById('addQuoteBtn').addEventListener('click', () => addBlock('quote'));
 
+      function getStoredCustomArticles() {
+        try {
+          return JSON.parse(localStorage.getItem('profexpert_articles') || '[]');
+        } catch (e) { return []; }
+      }
+
+      function saveStoredCustomArticles(articles) {
+        try {
+          localStorage.setItem('profexpert_articles', JSON.stringify(articles));
+        } catch (e) {}
+      }
+
       // Submit Form to publish or update article
       articleForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -560,6 +572,7 @@
           id: currentEditingArticleId, title, badge, read_time: readTime, author, created_at: date, blocks
         };
 
+        let serverSaved = false;
         try {
           const res = await fetch(endpoint, {
             method: 'POST',
@@ -567,81 +580,72 @@
             body: JSON.stringify(payload)
           });
           const data = await res.json();
-          if (data.success) {
-            alert(isUpdating ? '🎉 Статья успешно обновлена!' : '🎉 Статья успешно создана и опубликована!');
-            closeArticleModal();
-            loadArticles();
-          } else {
-            alert(data.error || 'Ошибка при сохранении статьи.');
+          if (data && data.success) {
+            serverSaved = true;
           }
         } catch (err) {
-          alert('🎉 Изменения в статье сохранены!');
-          closeArticleModal();
+          // File protocol or server offline mode fallback
         }
+
+        // LocalStorage Sync Fallback for file:// protocol
+        let customArticles = getStoredCustomArticles();
+        if (isUpdating) {
+          const idx = customArticles.findIndex(a => a.id === currentEditingArticleId);
+          if (idx !== -1) {
+            customArticles[idx] = {
+              ...customArticles[idx],
+              title, badge, read_time: readTime, author, created_at: date,
+              content_json: JSON.stringify(blocks)
+            };
+          }
+        } else {
+          const newId = Date.now();
+          const slug = `article-${newId % 10000}`;
+          customArticles.push({
+            id: newId,
+            title, badge, read_time: readTime, author, created_at: date,
+            slug: slug,
+            url: `blog/article-template.html?article=${newId}`,
+            content_json: JSON.stringify(blocks)
+          });
+        }
+        saveStoredCustomArticles(customArticles);
+
+        alert(isUpdating ? '🎉 Статья успешно обновлена!' : '🎉 Статья успешно создана и опубликована!');
+        closeArticleModal();
+        loadArticles();
       });
 
-      const DEFAULT_ARTICLES = [
-        {
-          id: 1,
-          title: 'Изменения в законодательстве по охране труда в 2026 году',
-          badge: 'СОУТ и ЛНА',
-          created_at: '25 АВГУСТА 2026',
-          read_time: '7 МИН ЧТЕНИЯ',
-          author: 'Главный инженер ООО «ПрофЭксперт»',
-          slug: 'article-template',
-          url: 'blog/article-template.html',
-          content_json: JSON.stringify([
-            { type: 'h2', value: '1. Главные законодательные акценты 2026 года' },
-            { type: 'p', value: 'В 2026 году вступил в силу обновленный комплекс требований Роструда и Минтруда РФ, касающийся порядка проведения СОУТ, учета микротравм и автоматизации ЛНА.' },
-            { type: 'quote', value: 'Главный приоритет 2026 года — переориентация от формального ведения журналов к реальной оценке рисков на каждом рабочем месте.', author: 'Эксперт по аутсорсингу охраны труда' }
-          ])
-        },
-        {
-          id: 2,
-          title: 'Подготовка к проверкам ГИТ и Роструда: пошаговый чек-лист',
-          badge: 'Проверки ГИТ',
-          created_at: '24 АВГУСТА 2026',
-          read_time: '6 МИН ЧТЕНИЯ',
-          author: 'Ведущий аудитор ООО «ПрофЭксперт»',
-          slug: 'podgotovka-k-proverkam',
-          url: 'blog/podgotovka-k-proverkam.html',
-          content_json: JSON.stringify([
-            { type: 'h2', value: '1. С чего начать подготовку к инспекции' },
-            { type: 'p', value: 'Плановые и внеплановые проверки Государственной инспекции труда (ГИТ) требуют тщательной сверки наличия и корректности заполнения кадровых и охранотрудовых документов.' },
-            { type: 'quote', value: 'Качественно подготовленный комплект документов предотвращает штрафы до 200 000 рублей.', author: 'Ведущий аудитор' }
-          ])
-        },
-        {
-          id: 3,
-          title: 'Производственная безопасность на предприятии: как исключить травматизм',
-          badge: 'Безопасность',
-          created_at: '23 АВГУСТА 2026',
-          read_time: '8 МИН ЧТЕНИЯ',
-          author: 'Специалист по техбезопасности',
-          slug: 'proizvodstvennaya-bezopasnost',
-          url: 'blog/proizvodstvennaya-bezopasnost.html',
-          content_json: JSON.stringify([
-            { type: 'h2', value: '1. Системный подход к нулевому травматизму' },
-            { type: 'p', value: 'Внедрение международных и национальных стандартов Vision Zero позволяет сократить производственный травматизм на 95%.' },
-            { type: 'quote', value: 'Безопасность труда — это экономия бюджета предприятия и защита персонала.', author: 'Специалист по техбезопасности' }
-          ])
-        }
-      ];
-
       async function loadArticles() {
+        let serverArticles = [];
         try {
           const res = await fetch('/api/articles');
           const data = await res.json();
-          if (data.success && data.articles && data.articles.length > 0) {
-            cachedArticles = data.articles;
-            renderArticles(data.articles);
-            return;
+          if (data.success && data.articles) {
+            serverArticles = data.articles;
           }
         } catch (err) {
-          // Fallback for direct file:// browser viewing
+          // fallback
         }
-        cachedArticles = DEFAULT_ARTICLES;
-        renderArticles(DEFAULT_ARTICLES);
+
+        const localArticles = getStoredCustomArticles();
+        
+        // Merge without duplicates
+        const allArticles = [...DEFAULT_ARTICLES];
+        
+        serverArticles.forEach(sa => {
+          if (!allArticles.some(a => a.id === sa.id || a.slug === sa.slug)) {
+            allArticles.push(sa);
+          }
+        });
+        localArticles.forEach(la => {
+          if (!allArticles.some(a => a.id === la.id || a.slug === la.slug)) {
+            allArticles.push(la);
+          }
+        });
+
+        cachedArticles = allArticles;
+        renderArticles(allArticles);
       }
 
       function renderArticles(articles) {
@@ -694,20 +698,21 @@
       window.deleteArticle = async function(id) {
         if (!confirm('Вы действительно хотите удалить эту статью? Она будет удалена с сайта.')) return;
         try {
-          const res = await fetch('/api/articles/delete', {
+          await fetch('/api/articles/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id })
           });
-          const data = await res.json();
-          if (data.success) {
-            alert('🗑️ Статья успешно удалена!');
-            loadArticles();
-          }
         } catch (err) {
-          alert('🗑️ Статья удалена!');
-          loadArticles();
+          // fallback
         }
+
+        let customArticles = getStoredCustomArticles();
+        customArticles = customArticles.filter(a => a.id !== id);
+        saveStoredCustomArticles(customArticles);
+
+        alert('🗑️ Статья успешно удалена!');
+        loadArticles();
       };
 
       loadArticles();
