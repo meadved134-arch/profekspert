@@ -414,6 +414,15 @@ class CustomHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=os.path.dirname(__file__), **kwargs)
 
+    def end_headers(self):
+        # Disable browser caching for JS and CSS so changes apply immediately
+        path = urlparse(self.path).path
+        if path.endswith('.js') or path.endswith('.css') or path.endswith('.html'):
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Expires', '0')
+        super().end_headers()
+
     def do_POST(self):
         parsed_url = urlparse(self.path)
         
