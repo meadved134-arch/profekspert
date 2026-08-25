@@ -5,5 +5,8 @@
   "smtp_port": 465,
   "smtp_user": "yablokoffkirill@yandex.ru",
   "smtp_password": "gkizoyrwjxfxynrh",
-  "recipient_email": "yablokoffkirill@yandex.ru"
+  "recipient_email": "yablokoffkirill@yandex.ru",
+  "telegram_enabled": true,
+  "telegram_bot_token": "8743814854:AAHAjnTH96JpaY1HdrnUC5nnX0bhB6qX5eM",
+  "telegram_chat_id": "701766413"
 }

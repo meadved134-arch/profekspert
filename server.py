@@ -11,6 +11,7 @@ from datetime import datetime
 from email.mime.text import MIMEText
 from email.header import Header
 from http.server import SimpleHTTPRequestHandler, HTTPServer
+import urllib.request
 from urllib.parse import parse_qs, urlparse
 
 PORT = 8085
@@ -189,11 +190,46 @@ def send_email_notification(name, phone, company, created_at, source):
                 server.sendmail(config["smtp_user"], [config["recipient_email"]], msg.as_string())
                 server.quit()
                 print(f"[SMTP SUCCESS via 587] Notification email sent to {config['recipient_email']}")
-                return
             except Exception as e2:
                 print(f"[SMTP ERROR] Failed to send email via 465 ({e1}) and 587 ({e2})")
     except Exception as e:
         print(f"[SMTP ERROR] Failed to prepare email: {e}")
+
+def send_telegram_notification(name, phone, company, created_at, source):
+    config = get_config()
+    if not config.get("telegram_enabled"):
+        return
+    token = config.get("telegram_bot_token", "").strip()
+    chat_id = config.get("telegram_chat_id", "").strip()
+    if not token or not chat_id:
+        return
+
+    text = f"""🔥 *НОВАЯ ЗАЯВКА С САЙТА*
+━━━━━━━━━━━━━━━━━━━━
+👤 *Имя клиента:* {name}
+📞 *Телефон:* `{phone}`
+🏢 *Компания:* {company if company else 'Не указано'}
+📅 *Дата и время:* {created_at}
+📍 *Источник:* {source}
+━━━━━━━━━━━━━━━━━━━━
+💾 Заявка сохранена в базе данных"""
+
+    try:
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = json.dumps({
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": "Markdown"
+        }).encode('utf-8')
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=10) as res:
+            res_data = json.loads(res.read().decode('utf-8'))
+            if res_data.get("ok"):
+                print(f"[TG SUCCESS] Telegram notification sent to chat_id {chat_id}")
+            else:
+                print(f"[TG ERROR] Telegram response error: {res_data}")
+    except Exception as e:
+        print(f"[TG ERROR] Failed to send telegram notification: {e}")
 
 def get_all_articles():
     conn = sqlite3.connect(DB_FILE)
@@ -508,6 +544,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
 
             lead_id, created_at = save_lead(name, phone, company, source)
             threading.Thread(target=send_email_notification, args=(name, phone, company, created_at, source), daemon=True).start()
+            threading.Thread(target=send_telegram_notification, args=(name, phone, company, created_at, source), daemon=True).start()
 
             self._send_json({"success": True, "message": "Заявка успешно отправлена! Эксперт свяжется с вами.", "id": lead_id})
             return
