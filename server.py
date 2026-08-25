@@ -6,6 +6,7 @@ import csv
 import sys
 import re
 import threading
+import io
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.header import Header
@@ -599,18 +600,21 @@ class CustomHandler(SimpleHTTPRequestHandler):
             return
 
         elif parsed_url.path == "/api/leads/export":
-            # Export Leads to CSV (Excel readable)
+            # Export Leads to CSV (Excel readable with semicolon separator)
             leads = get_all_leads()
             self.send_response(200)
             self.send_header('Content-Type', 'text/csv; charset=utf-8-sig')
             self.send_header('Content-Disposition', 'attachment; filename="leads_profexpert.csv"')
             self.end_headers()
 
-            writer = csv.writer(self.wfile)
-            self.wfile.write('\ufeff'.encode('utf-8'))
+            string_buffer = io.StringIO()
+            writer = csv.writer(string_buffer, delimiter=';')
             writer.writerow(["ID", "Дата и время", "Имя клиента", "Телефон", "Компания", "Источник", "Статус"])
             for l in leads:
                 writer.writerow([l["id"], l["created_at"], l["name"], l["phone"], l["company"], l["source"], l["status"]])
+
+            csv_bytes = string_buffer.getvalue().encode('utf-8-sig')
+            self.wfile.write(csv_bytes)
             return
 
         super().do_GET()
