@@ -40,6 +40,10 @@ def get_config():
     except Exception:
         return DEFAULT_CONFIG
 
+def save_config(config):
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
+
 def seed_default_articles(cursor):
     default_articles = [
         (
@@ -626,6 +630,25 @@ class CustomHandler(SimpleHTTPRequestHandler):
                 self._send_json({"success": False, "error": "Не указан ID статьи."}, status=400)
             return
 
+        elif parsed_url.path == "/api/admin/settings":
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8')
+            data = json.loads(body)
+            cfg = get_config()
+            for key in ["admin_password", "email_enabled", "smtp_server", "smtp_port", "smtp_user", "smtp_password", "recipient_email", "telegram_enabled", "telegram_bot_token", "telegram_chat_id"]:
+                if key in data:
+                    cfg[key] = data[key]
+            save_config(cfg)
+            self._send_json({"success": True, "message": "Настройки успешно сохранены!"})
+            return
+
+        elif parsed_url.path == "/api/admin/test_notification":
+            test_time = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+            threading.Thread(target=send_email_notification, args=("Тестовый клиент", "+7 (999) 000-00-00", "ООО «Тест»", test_time, "Тест из панели управления"), daemon=True).start()
+            threading.Thread(target=send_telegram_notification, args=("Тестовый клиент", "+7 (999) 000-00-00", "ООО «Тест»", test_time, "Тест из панели управления"), daemon=True).start()
+            self._send_json({"success": True, "message": "Тестовые уведомления отправлены в Telegram и на Email!"})
+            return
+
         self._send_json({"success": False, "error": "Not Found"}, status=404)
 
     def do_GET(self):
@@ -635,6 +658,11 @@ class CustomHandler(SimpleHTTPRequestHandler):
             # Admin Leads API
             leads = get_all_leads()
             self._send_json({"success": True, "leads": leads})
+            return
+
+        elif parsed_url.path == "/api/admin/settings":
+            cfg = get_config()
+            self._send_json({"success": True, "config": cfg})
             return
 
         elif parsed_url.path == "/api/articles":

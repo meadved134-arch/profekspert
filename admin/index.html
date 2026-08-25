@@ -208,6 +208,7 @@
       <div class="admin-tabs">
         <button class="admin-tab-btn active" data-tab="tabLeads">Заявки клиентов</button>
         <button class="admin-tab-btn" data-tab="tabArticles">Управление статьями</button>
+        <button class="admin-tab-btn" data-tab="tabSettings">⚙️ Настройки уведомлений</button>
       </div>
 
       <!-- TAB 1: LEADS MANAGEMENT -->
@@ -272,6 +273,150 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: NOTIFICATION & ADMIN SETTINGS -->
+      <div id="tabSettings" class="admin-tab-content" style="display: none;">
+        <div class="admin-card">
+          <div class="admin-toolbar">
+            <div>
+              <h3 style="margin: 0; font-size: 1.1rem;">⚙️ НАСТРОЙКИ УВЕДОМЛЕНИЙ И БЕЗОПАСНОСТИ</h3>
+              <p style="margin: 4px 0 0 0; font-size: 13px; color: #666;">Настройте каналы мгновенного получения заявок и пароль администратора</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button type="button" class="btn btn-secondary js-test-btn">🧪 Отправить тест</button>
+              <button type="button" class="btn btn-primary js-save-btn">💾 Сохранить настройки</button>
+            </div>
+          </div>
+
+          <form id="settingsForm">
+            <!-- 1. TELEGRAM SETTINGS -->
+            <div style="border: 1px solid var(--color-border); padding: 24px; margin-bottom: 24px; background: #ffffff;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 22px;">📱</span>
+                  <h4 style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em;">Уведомления в Telegram (Рекомендуется)</h4>
+                </div>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">
+                  <input type="checkbox" id="cfgTgEnabled" style="width: 18px; height: 18px; accent-color: #020203;">
+                  Включено
+                </label>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px;">
+                <div class="form-group">
+                  <label for="cfgTgToken">Токен Telegram-бота</label>
+                  <input type="text" id="cfgTgToken" class="form-input" placeholder="например: 8743814854:AAHAjnTH96JpaY1HdrnUC5nnX0bhB6qX5eM">
+                  <span style="font-size: 11px; color: #888;">Получается у официального бота @BotFather</span>
+                </div>
+                <div class="form-group">
+                  <label for="cfgTgChatId">Telegram Chat ID получателя</label>
+                  <input type="text" id="cfgTgChatId" class="form-input" placeholder="например: 701766413 или несколько через запятую">
+                  <span style="font-size: 11px; color: #888;">Ваш ID от @userinfobot или ID группы (начинается с минуса)</span>
+                </div>
+              </div>
+
+              <!-- TELEGRAM INSTRUCTIONS ACCORDION -->
+              <details style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 14px 18px; margin-top: 12px;">
+                <summary style="font-weight: 700; font-size: 12px; cursor: pointer; text-transform: uppercase; color: #020203;">
+                  📖 Инструкция: Как создать и подключить Telegram-бота (по шагам)
+                </summary>
+                <div style="font-size: 13px; line-height: 1.6; color: #444; margin-top: 12px;">
+                  <ol style="margin-left: 20px; padding: 0;">
+                    <li style="margin-bottom: 8px;"><b>Создать бота:</b> Откройте бота <b><a href="https://t.me/BotFather" target="_blank" style="color: #0066cc;">@BotFather</a></b> в Telegram, отправьте команду <code>/newbot</code>, задайте имя и юзернейм (например, <i>profexpert_leads_bot</i>). Скопируйте выданный <b>API Token</b> в поле выше.</li>
+                    <li style="margin-bottom: 8px;"><b>Узнать ваш Chat ID:</b> Откройте бота <b><a href="https://t.me/userinfobot" target="_blank" style="color: #0066cc;">@userinfobot</a></b> (или @getmyid_bot) и нажмите <i>«Запустить»</i>. Скопируйте число из строки <code>Id</code> в поле выше.</li>
+                    <li style="margin-bottom: 8px;"><b>Активировать бота:</b> Обязательно откройте <u>вашего созданного бота</u> в Telegram и нажмите <b>«Запустить» (/start)</b>.</li>
+                    <li><b>Для группы компании:</b> Создайте группу, добавьте туда бота, сделайте админом, добавьте @userinfobot (чтобы узнать ID группы, он начинается с минуса, например <code>-1001234567890</code>) и укажите этот ID в поле.</li>
+                  </ol>
+                </div>
+              </details>
+            </div>
+
+            <!-- 2. EMAIL SETTINGS -->
+            <div style="border: 1px solid var(--color-border); padding: 24px; margin-bottom: 24px; background: #ffffff;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 22px;">✉️</span>
+                  <h4 style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em;">Уведомления на Почту (SMTP)</h4>
+                </div>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">
+                  <input type="checkbox" id="cfgEmailEnabled" style="width: 18px; height: 18px; accent-color: #020203;">
+                  Включено
+                </label>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px;">
+                <div class="form-group">
+                  <label for="cfgRecipientEmail">Email получателя (куда присылать заявки)</label>
+                  <input type="text" id="cfgRecipientEmail" class="form-input" placeholder="yablokoffkirill@yandex.ru или несколько через запятую">
+                  <span style="font-size: 11px; color: #888;">Можно указать несколько адресов через запятую</span>
+                </div>
+                <div class="form-group">
+                  <label for="cfgSmtpUser">Email отправителя (Логин SMTP)</label>
+                  <input type="text" id="cfgSmtpUser" class="form-input" placeholder="yablokoffkirill@yandex.ru или info@profexpert76.ru">
+                  <span style="font-size: 11px; color: #888;">Почтовый ящик, с которого отсылаются письма</span>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; margin-bottom: 16px;">
+                <div class="form-group">
+                  <label for="cfgSmtpPassword">Пароль приложения (SMTP)</label>
+                  <div style="position: relative;">
+                    <input type="password" id="cfgSmtpPassword" class="form-input" placeholder="16-значный пароль приложения" style="padding-right: 40px;">
+                    <button type="button" onclick="togglePasswordVisibility('cfgSmtpPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 16px;">👁️</button>
+                  </div>
+                  <span style="font-size: 11px; color: #888;">Специальный пароль для программ из настроек безопасности</span>
+                </div>
+                <div class="form-group">
+                  <label for="cfgSmtpServer">SMTP Сервер</label>
+                  <input type="text" id="cfgSmtpServer" class="form-input" placeholder="smtp.yandex.ru">
+                </div>
+                <div class="form-group">
+                  <label for="cfgSmtpPort">SMTP Порт</label>
+                  <input type="number" id="cfgSmtpPort" class="form-input" placeholder="465">
+                </div>
+              </div>
+
+              <!-- EMAIL INSTRUCTIONS ACCORDION -->
+              <details style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 14px 18px; margin-top: 12px;">
+                <summary style="font-weight: 700; font-size: 12px; cursor: pointer; text-transform: uppercase; color: #020203;">
+                  📖 Инструкция: Как получить пароль приложения для почты (Яндекс / Mail.ru / Хостинг)
+                </summary>
+                <div style="font-size: 13px; line-height: 1.6; color: #444; margin-top: 12px;">
+                  <ul style="margin-left: 20px; padding: 0;">
+                    <li style="margin-bottom: 8px;"><b>Яндекс Почта / Яндекс 360:</b> Перейдите в <b><a href="https://id.yandex.ru/security" target="_blank" style="color: #0066cc;">id.yandex.ru/security</a></b> ➔ раздел <i>«Пароли приложений»</i> ➔ нажмите <i>«Создать пароль»</i> ➔ тип <i>«Почта»</i>. Скопируйте 16-значный пароль. Сервер: <code>smtp.yandex.ru</code>, Порт: <code>465</code>.</li>
+                    <li style="margin-bottom: 8px;"><b>Mail.ru / VK WorkSpace:</b> Перейдите в <b><a href="https://account.mail.ru/user/security" target="_blank" style="color: #0066cc;">account.mail.ru/user/security</a></b> ➔ <i>«Пароли для внешних приложений»</i> ➔ <i>«Добавить»</i>. Сервер: <code>smtp.mail.ru</code>, Порт: <code>465</code>.</li>
+                    <li><b>Почта на хостинге (Timeweb, Beget, Reg.ru):</b> Создайте ящик в панели хостинга (например, info@vash-domen.ru) и укажите SMTP-сервер хостинга, порт 465 и обычный пароль от ящика.</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+
+            <!-- 3. ADMIN PASSWORD -->
+            <div style="border: 1px solid var(--color-border); padding: 24px; margin-bottom: 24px; background: #ffffff;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 12px;">
+                <span style="font-size: 22px;">🔒</span>
+                <h4 style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em;">Безопасность и пароль входа в админку</h4>
+              </div>
+              <div style="max-width: 420px;">
+                <div class="form-group">
+                  <label for="cfgAdminPassword">Пароль для входа в панель управления</label>
+                  <div style="position: relative;">
+                    <input type="password" id="cfgAdminPassword" class="form-input" placeholder="admin" style="padding-right: 40px;">
+                    <button type="button" onclick="togglePasswordVisibility('cfgAdminPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 16px;">👁️</button>
+                  </div>
+                  <span style="font-size: 11px; color: #888;">Текущий пароль по умолчанию: <code>admin</code></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUBMIT BUTTONS -->
+            <div style="display: flex; gap: 16px; justify-content: flex-end; align-items: center;">
+              <button type="button" class="btn btn-secondary js-test-btn">🧪 Отправить тестовое уведомление</button>
+              <button type="submit" class="btn btn-primary" style="padding: 14px 28px; font-size: 13px;">💾 Сохранить все настройки</button>
+            </div>
+          </form>
         </div>
       </div>
     </main>
@@ -443,6 +588,9 @@
           btn.classList.add('active');
           const tabId = btn.getAttribute('data-tab');
           document.getElementById(tabId).style.display = 'block';
+          if (tabId === 'tabSettings') {
+            loadSettings();
+          }
         });
       });
 
@@ -764,7 +912,99 @@
         loadArticles();
       };
 
+      /* ==========================================================================
+         SETTINGS CONTROLLER (TELEGRAM, EMAIL, PASSWORD)
+         ========================================================================== */
+      window.togglePasswordVisibility = function(inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+          input.type = input.type === 'password' ? 'text' : 'password';
+        }
+      };
+
+      async function loadSettings() {
+        try {
+          const res = await fetch('/api/admin/settings');
+          const data = await res.json();
+          if (data.success && data.config) {
+            const c = data.config;
+            document.getElementById('cfgTgEnabled').checked = !!c.telegram_enabled;
+            document.getElementById('cfgTgToken').value = c.telegram_bot_token || '';
+            document.getElementById('cfgTgChatId').value = c.telegram_chat_id || '';
+
+            document.getElementById('cfgEmailEnabled').checked = !!c.email_enabled;
+            document.getElementById('cfgRecipientEmail').value = c.recipient_email || '';
+            document.getElementById('cfgSmtpUser').value = c.smtp_user || '';
+            document.getElementById('cfgSmtpPassword').value = c.smtp_password || '';
+            document.getElementById('cfgSmtpServer').value = c.smtp_server || 'smtp.yandex.ru';
+            document.getElementById('cfgSmtpPort').value = c.smtp_port || 465;
+
+            document.getElementById('cfgAdminPassword').value = c.admin_password || 'admin';
+          }
+        } catch (err) {
+          console.error('Failed to load settings:', err);
+        }
+      }
+
+      async function saveSettings(e) {
+        if (e) e.preventDefault();
+        const payload = {
+          telegram_enabled: document.getElementById('cfgTgEnabled').checked,
+          telegram_bot_token: document.getElementById('cfgTgToken').value.trim(),
+          telegram_chat_id: document.getElementById('cfgTgChatId').value.trim(),
+
+          email_enabled: document.getElementById('cfgEmailEnabled').checked,
+          recipient_email: document.getElementById('cfgRecipientEmail').value.trim(),
+          smtp_user: document.getElementById('cfgSmtpUser').value.trim(),
+          smtp_password: document.getElementById('cfgSmtpPassword').value.trim(),
+          smtp_server: document.getElementById('cfgSmtpServer').value.trim() || 'smtp.yandex.ru',
+          smtp_port: parseInt(document.getElementById('cfgSmtpPort').value) || 465,
+
+          admin_password: document.getElementById('cfgAdminPassword').value.trim() || 'admin'
+        };
+
+        try {
+          const res = await fetch('/api/admin/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert('🎉 Все настройки успешно сохранены и обновлены в config.json!');
+          } else {
+            alert('Ошибка сохранения: ' + (data.error || 'Неизвестная ошибка'));
+          }
+        } catch (err) {
+          alert('Ошибка связи с сервером при сохранении настроек.');
+        }
+      }
+
+      async function testNotifications() {
+        if (!confirm('Отправить тестовое уведомление в Telegram и на Email с текущими сохранёнными настройками?')) return;
+        try {
+          const res = await fetch('/api/admin/test_notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert('🚀 ' + data.message + '\n\nПроверьте ваш Telegram и почтовый ящик!');
+          } else {
+            alert('Ошибка теста: ' + (data.error || 'Не удалось отправить'));
+          }
+        } catch (err) {
+          alert('Ошибка отправки тестового уведомления.');
+        }
+      }
+
+      document.getElementById('settingsForm').addEventListener('submit', saveSettings);
+      document.querySelectorAll('.js-save-btn').forEach(btn => btn.addEventListener('click', saveSettings));
+      document.querySelectorAll('.js-test-btn').forEach(btn => btn.addEventListener('click', testNotifications));
+
       loadArticles();
+      loadSettings();
     });
   </script>
 </body>
