@@ -410,6 +410,40 @@ def save_article(title, badge, read_time, author, created_at, blocks):
     conn.close()
     return slug, url
 
+def update_article(article_id, title, badge, read_time, author, created_at, blocks):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute('SELECT slug FROM articles WHERE id = ?', (article_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return None
+    slug = row[0]
+    generate_article_html(title, badge, read_time, author, created_at, blocks, slug)
+    cursor.execute('''
+        UPDATE articles SET title=?, badge=?, read_time=?, author=?, created_at=?, content_json=?
+        WHERE id=?
+    ''', (title, badge, read_time, author, created_at, json.dumps(blocks, ensure_ascii=False), article_id))
+    conn.commit()
+    conn.close()
+    return slug
+
+def delete_article(article_id):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute('SELECT slug FROM articles WHERE id = ?', (article_id,))
+    row = cursor.fetchone()
+    if row:
+        slug = row[0]
+        # Delete the HTML file from blog/
+        html_path = os.path.join(os.path.dirname(__file__), 'blog', f'{slug}.html')
+        if os.path.exists(html_path):
+            os.remove(html_path)
+        cursor.execute('DELETE FROM articles WHERE id = ?', (article_id,))
+        conn.commit()
+    conn.close()
+
+
 class CustomHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=os.path.dirname(__file__), **kwargs)
