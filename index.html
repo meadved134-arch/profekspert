@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ООО «ПрофЭксперт» — Охрана труда для предприятий Ярославской области</title>
+  <meta name="description" content="ООО «ПрофЭксперт» оказывает комплексные услуги в сфере охраны труда, СОУТ, аутсорсинга и аудит для предприятий Ярославской области и России.">
+  <meta name="keywords" content="ПрофЭксперт, охрана труда Ярославль, аутсорсинг охраны труда, СОУТ, оценка рисков, аудит охраны труда, Рыбинск">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Leaflet Interactive Map CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       HEADER & NAVIGATION BAR
+       ========================================================================== -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="#hero" class="logo" id="logoLink">
+        <img src="assets/logo_transparent.png" alt="ООО ПрофЭксперт" class="brand-logo-img">
+        <div class="logo-text">
+          <span>Охрана труда для предприятий</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-menu" id="navMenu">
+          <li><a href="#about" class="nav-link">О компании</a></li>
+          <li><a href="#services" class="nav-link">Решения</a></li>
+          <li><a href="#industry" class="nav-link">Компетенции</a></li>
+          <li><a href="#blog" class="nav-link">Экспертный блог</a></li>
+          <li><a href="#contacts" class="nav-link">Контакты</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-cta">
+        <button class="btn btn-primary header-btn js-open-modal" data-modal-title="Получить консультацию">
+          Получить консультацию
+        </button>
+
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Открыть меню">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==========================================================================
+         1. HERO SECTION
+         ========================================================================== -->
+    <section class="hero" id="hero">
+      <div class="container">
+        <div class="hero-grid">
+          <div class="hero-content">
+            <h1>Охрана труда для предприятий Ярославской области</h1>
+            <p>
+              ООО «ПрофЭксперт» оказывает услуги в сфере охраны труда на предприятиях любой отрасли. 
+              Сопровождает учреждения и организации, независимо от формы их собственности, с целью обеспечения надлежащих условий труда для сотрудников.
+            </p>
+            <div class="hero-actions">
+              <button class="btn btn-primary js-open-modal" data-modal-title="Получить консультацию" id="heroCtaMain">
+                Получить консультацию
+              </button>
+              <button class="btn btn-secondary js-open-modal" data-modal-title="Получить бесплатный аудит" id="heroCtaAudit">
+                Получить бесплатный аудит
+              </button>
+            </div>
+          </div>
+
+          <div class="hero-image-wrapper">
+            <img src="assets/worker_ppe.jpg" alt="Специалист в процессе работы в спецодежде и каске" class="hero-image">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         2. ABOUT & RISKS SECTION (DIAGRAM LAYOUT)
+         ========================================================================== -->
+    <section class="section" id="about">
+      <div class="container">
+        <div class="section-header-split">
+          <h2>ООО «ПрофЭксперт» - надежный партнер по охране труда</h2>
+          <p>
+            Мы помогаем предприятиям выстроить работающую систему охраны труда, которая соответствует законодательству, 
+            снижаем риски, что позволяет руководителям спокойно заниматься развитием бизнеса.
+          </p>
+        </div>
+
+        <div class="risks-diagram-container" id="risksDiagramContainer">
+          <!-- Dynamic SVG Vector Connectors -->
+          <svg class="diagram-svg" id="diagramSvg">
+            <defs>
+              <marker id="arrowhead" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M 0 1 L 8 4 L 0 7 z" fill="#020203" />
+              </marker>
+            </defs>
+          </svg>
+
+          <div class="diagram-grid">
+            <!-- Top Row: 3 cards pointing to center -->
+            <div class="risk-node card-tl">
+              <h3>Административные штрафы</h3>
+              <p>Штрафы за нарушения требований охраны труда и промышленной безопасности могут достигать сотен тысяч рублей.</p>
+            </div>
+
+            <div class="risk-node card-tc">
+              <h3>Приостановка деятельности</h3>
+              <p>Контролирующие органы вправе ограничить или приостановить эксплуатацию объектов до устранения нарушений.</p>
+            </div>
+
+            <div class="risk-node card-tr">
+              <h3>Несчастные случаи</h3>
+              <p>Производственные травмы приводят к расследованиям, дополнительным расходам и могут повлечь серьезные правовые последствия.</p>
+            </div>
+
+            <!-- Middle Row: Left card, Central Node, Right card -->
+            <div class="risk-node card-ml">
+              <h3>Уголовная ответственность</h3>
+              <p>При тяжких последствиях ответственность может наступить не только для организации, но и для должностных лиц.</p>
+            </div>
+
+            <!-- Central Core Node -->
+            <div class="diagram-core-node">
+              <div class="core-node-inner">
+                ВАШ БИЗНЕС
+              </div>
+            </div>
+
+            <div class="risk-node card-mr">
+              <h3>Репутационные потери</h3>
+              <p>Информация о серьезных нарушениях и авариях влияет на доверие сотрудников, партнеров и заказчиков.</p>
+            </div>
+
+            <!-- Bottom Row: Card pointing up-right -->
+            <div class="risk-node card-bl">
+              <h3>Финансовые издержки</h3>
+              <p>Помимо штрафов предприятие несет расходы на устранение нарушений, простой оборудования и организационные изменения.</p>
+            </div>
+          </div>
+
+          <!-- Bottom Connector Summary Card -->
+          <div class="diagram-bottom-wrapper">
+            <div class="diagram-summary-card">
+              <p>Наша задача — помочь выявить и минимизировать эти риски до того, как они приведут к последствиям.</p>
+              <button class="btn btn-primary js-open-modal" data-modal-title="Получить консультацию по рискам">
+                Получить консультацию
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         3. SERVICES SECTION (IZOMETRY ROW LIST LAYOUT)
+         ========================================================================== -->
+    <section class="section" id="services">
+      <div class="container">
+        <div class="section-header-split">
+          <h2>ПОЛНЫЙ СПЕКТР УСЛУГ ПО ОХРАНЕ ТРУДА И БЕЗОПАСНОСТИ</h2>
+          <p>
+            Каждое предприятие сталкивается с разными задачами: кому-то необходимо подготовиться к проверке, кому-то - разработать документы, организовать обучение сотрудников или выстроить систему управления охраной труда. Мы предлагаем решения, адаптированные под специфику бизнеса и требования законодательства.
+          </p>
+        </div>
+
+        <!-- Main Services List -->
+        <div class="services-list-container">
+          <div class="service-row-item">
+            <div class="service-row-num">| 01 |</div>
+            <div class="service-row-content">
+              <h4>Аудит охраны труда</h4>
+              <p>Комплексный анализ системы охраны труда на предприятии, выявление нарушений и оценка соответствия актуальным требованиям законодательства.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 02 |</div>
+            <div class="service-row-content">
+              <h4>Разработка и внедрение системы управления охраной труда в организации</h4>
+              <p>Создание индивидуальной СУОТ под требования предприятия, подготовка приказов, положений, стандартных операционных процедур и регламентов.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 03 |</div>
+            <div class="service-row-content">
+              <h4>Разработка и утверждение правил и инструкций по охране труда для сотрудников организации</h4>
+              <p>Составление понятных и корректных инструкций по профессиям и видам работ в соответствии с новыми правилами Минтруда РФ.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 04 |</div>
+            <div class="service-row-content">
+              <h4>Организация обучения по охране труда, организация специальной оценки условий труда и оценки профессиональных рисков</h4>
+              <p>Полное сопровождение процессов обучения персонала, проведения СОУТ и комплексного выявления производственных рисков.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 05 |</div>
+            <div class="service-row-content">
+              <h4>Разработка списка контингентов, подлежащих предварительным и периодическим медицинским осмотрам (обследованиям)</h4>
+              <p>Определение категорий работников, формирование поименных списков и подготовка пакета документов для медосмотров.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 06 |</div>
+            <div class="service-row-content">
+              <h4>Разработка локального нормативного акта, утверждающего нормы бесплатной выдачи работникам специальной одежды</h4>
+              <p>Расчет и утверждение норм выдачи СИЗ и смывающих средств согласно единым типовым нормам выдачи спецодежды.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 07 |</div>
+            <div class="service-row-content">
+              <h4>Организация, расследование и учет несчастных случаев на производстве</h4>
+              <p>Оперативный выезд эксперта, подготовка материалов расследования, оформление актов Н-1 и взаимодействие с ГИТ.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 08 |</div>
+            <div class="service-row-content">
+              <h4>Разработка комплекта нормативных правовых актов, содержащих требования охраны труда в соответствии со спецификой деятельности организации</h4>
+              <p>Подготовка полной нормативной базы с учетом индивидуальных технологических процессов и особенностей вашей компании.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 09 |</div>
+            <div class="service-row-content">
+              <h4>Контроль за обеспечением соответствующих требованиям охраны труда условий труда на каждом рабочем месте</h4>
+              <p>Периодический мониторинг рабочих мест, выявление отклонений, проведение аудита и выдача рекомендаций по устранению.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Services Subsection Header -->
+        <div class="section-header-split" style="margin-top: 80px;">
+          <h2>ДОПОЛНИТЕЛЬНЫЕ УСЛУГИ И СПЕЦИАЛЬНЫЕ НАПРАВЛЕНИЯ</h2>
+          <p>
+            Перечень услуг по охране труда определяется индивидуально для каждой организации после проведения аудита охраны труда. Мы подготовим необходимый пакет документов персонально для вашей организации, сэкономим ваше время и предоставим корректную консультацию.
+          </p>
+        </div>
+
+        <!-- Additional Services List -->
+        <div class="services-list-container">
+          <div class="service-row-item">
+            <div class="service-row-num">| 01 |</div>
+            <div class="service-row-content">
+              <h4>Проведение специальной оценки условий труда (СОУТ)</h4>
+              <p>Классификация условий труда на рабочих местах, идентификация вредных факторов и оформление деклараций соут.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 02 |</div>
+            <div class="service-row-content">
+              <h4>Оценка профессиональных рисков</h4>
+              <p>Идентификация опасностей, расчет уровней рисков на каждом рабочем месте и разработка реестра мероприятий по их снижению.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 03 |</div>
+            <div class="service-row-content">
+              <h4>Производственный контроль</h4>
+              <p>Составление программы производственного контроля и организация лабораторных измерений физических и химических факторов.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 04 |</div>
+            <div class="service-row-content">
+              <h4>Аутсорсинг пожарной безопасности, промышленной безопасности, ГО и ЧС</h4>
+              <p>Передача функций специалиста по пожарной и промышленной безопасности экспертам нашей компании под ключ.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 05 |</div>
+            <div class="service-row-content">
+              <h4>Расчет категории пожароопасности помещений; расчет количества огнетушителей</h4>
+              <p>Определение категорий по взрывопожарной и пожарной опасности, подготовка расчетов первичных средств пожаротушения.</p>
+            </div>
+          </div>
+
+          <div class="service-row-item">
+            <div class="service-row-num">| 06 |</div>
+            <div class="service-row-content">
+              <h4>Экологическое сопровождение бизнеса</h4>
+              <p>Разработка экологической документации, расчет платы за НВОС и подготовка обязательной отчетности в Росприроднадзор.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         4. INDUSTRY SOLUTIONS SECTION (CONCEPT 2 - CONNECTED CARDS)
+         ========================================================================== -->
+    <section class="section" id="industry">
+      <div class="container">
+        <div class="section-header">
+          <h2>РЕШЕНИЯ ДЛЯ ПРЕДПРИЯТИЙ<br>РАЗНЫХ ОТРАСЛЕЙ</h2>
+        </div>
+
+        <div class="industry-grid-concept">
+          <!-- Card 1: Малый и средний бизнес -->
+          <div class="industry-card-concept">
+            <div class="industry-icon-wrapper">
+              <img src="assets/card_icon_1.png" alt="Малый и средний бизнес" class="industry-icon-img">
+            </div>
+
+            <div class="industry-card-body">
+              <div class="industry-card-title-box">
+                <h3>МАЛЫЙ И СРЕДНИЙ<br>БИЗНЕС</h3>
+              </div>
+
+              <div class="industry-meta-list">
+                <div class="industry-meta-item">
+                  <strong>ТИПОВЫЕ ЗАДАЧИ:</strong>
+                  <span>АУТСОРСИНГ | ДОКУМЕНТЫ | ОБУЧЕНИЕ</span>
+                </div>
+                <div class="industry-meta-item">
+                  <strong>РИСКИ:</strong>
+                  <span>ШТРАФЫ | НЕХВАТКА РЕСУРСОВ</span>
+                </div>
+                <div class="industry-meta-item">
+                  <strong>КАК ПОМОГАЕМ:</strong>
+                  <span>БЕРЕМ ОХРАНУ ТРУДА НА СЕБЯ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Строительные компании -->
+          <div class="industry-card-concept">
+            <div class="industry-icon-wrapper">
+              <img src="assets/card_icon_2.png" alt="Строительные компании" class="industry-icon-img">
+            </div>
+
+            <div class="industry-card-body">
+              <div class="industry-card-title-box">
+                <h3>СТРОИТЕЛЬНЫЕ<br>КОМПАНИИ</h3>
+              </div>
+
+              <div class="industry-meta-list">
+                <div class="industry-meta-item">
+                  <strong>ТИПОВЫЕ ЗАДАЧИ:</strong>
+                  <span>ДОПУСКИ | ДОКУМЕНТЫ | ПРОВЕРКИ</span>
+                </div>
+                <div class="industry-meta-item">
+                  <strong>РИСКИ:</strong>
+                  <span>ПРОСТОЙ РАБОТ | НЕСЧАСТНЫЕ СЛУЧАИ</span>
+                </div>
+                <div class="industry-meta-item">
+                  <strong>КАК ПОМОГАЕМ:</strong>
+                  <span>ГОТОВИМ ОБЪЕКТ К БЕЗОПАСНОЙ РАБОТЕ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Производственные предприятия -->
+          <div class="industry-card-concept">
+            <div class="industry-icon-wrapper">
+              <img src="assets/card_icon_3.png" alt="Производственные предприятия" class="industry-icon-img">
+            </div>
+
+            <div class="industry-card-body">
+              <div class="industry-card-title-box">
+                <h3>ПРОИЗВОДСТВЕННЫЕ<br>ПРЕДПРИЯТИЯ</h3>
+              </div>
+
+              <div class="industry-meta-list">
+                <div class="industry-meta-item">
+                  <strong>ТИПОВЫЕ ЗАДАЧИ:</strong>
+                  <span>СОУТ | ОЦЕНКА РИСКОВ | АУДИТ</span>
+                </div>
+                <div class="industry-meta-item">
+                  <strong>РИСКИ:</strong>
+                  <span>ТРАВМАТИЗМ | НАРУШЕНИЯ ТРЕБОВАНИЙ</span>
+                </div>
+                <div class="industry-meta-item">
+                  <strong>КАК ПОМОГАЕМ:</strong>
+                  <span>ВЫСТРАИВАЕМ СИСТЕМУ БЕЗОПАСНОСТИ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Предприятия с ОПО -->
+          <div class="industry-card-concept">
+            <div class="industry-icon-wrapper">
+              <img src="assets/card_icon_4.svg" alt="Предприятия с ОПО" class="industry-icon-img">
+            </div>
+
+            <div class="industry-card-body">
+              <div class="industry-card-title-box">
+                <h3>ПРЕДПРИЯТИЯ<br>С ОПО</h3>
+              </div>
+
+              <div class="industry-meta-list">
+                <div class="industry-meta-item">
+                  <strong>ТИПОВЫЕ ЗАДАЧИ:</strong>
+                  <span>ПРОВЕРКИ | БЕЗОПАСНОСТЬ | ДОКУМЕНТЫ | СОПРОВОЖДЕНИЕ</span>
+                </div>
+                <div class="industry-meta-item">
+                  <strong>РИСКИ:</strong>
+                  <span>ПРЕДПИСАНИЯ | ПРИОСТАНОВКА ДЕЯТЕЛЬНОСТИ</span>
+                </div>
+                <div class="industry-meta-item">
+                  <strong>КАК ПОМОГАЕМ:</strong>
+                  <span>ПОДГОТАВЛИВАЕМ К ТРЕБОВАНИЯМ РОСТЕХНАДЗОРА</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         5. ADVANTAGES & WHY CHOOSE US SECTION (STICKY SPLIT + ALTERNATING CARDS)
+         ========================================================================== -->
+    <section class="section" id="advantages">
+      <div class="container">
+        <div class="why-us-split">
+          <!-- Sticky Left Column -->
+          <div class="why-us-left">
+            <span class="badge">НАШИ ПРЕИМУЩЕСТВА</span>
+            <h2>ПОЧЕМУ ПРЕДПРИЯТИЯ ВЫБИРАЮТ<br>ООО «ПРОФЭКСПЕРТ»</h2>
+            <div class="why-us-left-divider"></div>
+            <button class="btn btn-primary js-open-modal" data-modal-title="Получить консультацию эксперта">
+              Получить консультацию
+            </button>
+          </div>
+
+          <!-- Right Column: Alternating Cards -->
+          <div class="why-us-right">
+            <!-- Card 1 -->
+            <div class="why-us-card">
+              <div class="why-us-card-tag">ОПЫТ И ЭКСПЕРТИЗА</div>
+              <div class="why-us-card-title">РАБОТАЕМ В СФЕРЕ ОХРАНЫ ТРУДА</div>
+              <div class="why-us-card-divider"></div>
+              <div class="why-us-card-stat">10+ <span>Лет на рынке</span></div>
+              <p class="why-us-card-desc">Многолетний опыт сопровождения промышленных и коммерческих объектов любой сложности по Ярославской области.</p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="why-us-card">
+              <div class="why-us-card-tag">ПОЛНЫЙ ЦИКЛ</div>
+              <div class="why-us-card-title">КОМПЛЕКСНОЕ СОПРОВОЖДЕНИЕ ПРЕДПРИЯТИЙ</div>
+              <div class="why-us-card-divider"></div>
+              <div class="why-us-card-stat">100% <span>Полный цикл работ</span></div>
+              <p class="why-us-card-desc">Разработка документов, организация обучения, СОУТ, оценка рисков и подготовка к проверкам под ключ.</p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="why-us-card">
+              <div class="why-us-card-tag">АКТУАЛЬНОСТЬ</div>
+              <div class="why-us-card-title">СЛЕДИМ ЗА ИЗМЕНЕНИЯМИ ЗАКОНОДАТЕЛЬСТВА</div>
+              <div class="why-us-card-divider"></div>
+              <div class="why-us-card-stat">100% <span>Соответствие ФЗ</span></div>
+              <p class="why-us-card-desc">Все документальные решения и инструкции строго адаптируются под свежие требования Минтруда и ГИТ.</p>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="why-us-card">
+              <div class="why-us-card-tag">БЕЗОПАСНОСТЬ</div>
+              <div class="why-us-card-title">ПРАКТИЧЕСКИЙ ОПЫТ ПОДГОТОВКИ К ПРОВЕРКАМ</div>
+              <div class="why-us-card-divider"></div>
+              <div class="why-us-card-stat">0 <span>Штрафов для клиентов</span></div>
+              <p class="why-us-card-desc">Личное участие экспертов при инспекциях Роструда и Ростехнадзора с гарантией результата.</p>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="why-us-card">
+              <div class="why-us-card-tag">ПЕРСОНАЛИЗАЦИЯ</div>
+              <div class="why-us-card-title">ПЕРСОНАЛЬНЫЙ ЭКСПЕРТ</div>
+              <div class="why-us-card-divider"></div>
+              <div class="why-us-card-stat">1 <span>Закрепленный инженер</span></div>
+              <p class="why-us-card-desc">За вашей организацией закрепляется квалифицированный инженер по охране труда.</p>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="why-us-card">
+              <div class="why-us-card-tag">СПЕЦИФИКА</div>
+              <div class="why-us-card-title">РЕШЕНИЯ, АДАПТИРОВАННЫЕ ПОД СПЕЦИФИКУ ПРЕДПРИЯТИЯ</div>
+              <div class="why-us-card-divider"></div>
+              <div class="why-us-card-stat">100% <span>Учет технологий</span></div>
+              <p class="why-us-card-desc">Глубоко погружаемся в специфику ваших производственных процессов и оборудования.</p>
+            </div>
+
+            <!-- Card 7 -->
+            <div class="why-us-card">
+              <div class="why-us-card-tag">УДОБСТВО</div>
+              <div class="why-us-card-title">РАБОТАЕМ ОЧНО И ДИСТАНЦИОННО</div>
+              <div class="why-us-card-divider"></div>
+              <div class="why-us-card-stat">2 в 1 <span>Гибкий формат</span></div>
+              <p class="why-us-card-desc">Выезд специалистов на объекты и быстрый документооборот в удобном дистанционном режиме.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+          <p>
+            Мы предлагаем гибкую систему тарифов аутсорсинга охраны труда и доступную стоимость услуг, что позволит выбрать оптимальное решение для вашего бизнеса. Стоимость формируется с учетом численности персонала, специфики деятельности предприятия и объема необходимых работ.
+          </p>
+        </div>
+
+        <div class="tariffs-grid">
+          <div class="tariff-card">
+            <div>
+              <span class="badge">ДО 10 РАБОТНИКОВ</span>
+              <h3 class="tariff-title">Тарифный план "Базовый"</h3>
+            </div>
+            <div>
+              <div class="tariff-price">ОТ 15000 РУБ./МЕСЯЦ</div>
+              <button class="btn btn-primary js-open-modal" style="width: 100%;" data-modal-title="Заказать тариф Базовый">Выбрать тариф</button>
+            </div>
+          </div>
+
+          <div class="tariff-card">
+            <div>
+              <span class="badge">ОТ 10 ДО 50 РАБОТНИКОВ</span>
+              <h3 class="tariff-title">Тарифный план "Малый бизнес"</h3>
+            </div>
+            <div>
+              <div class="tariff-price">ОТ 20000 РУБ./МЕСЯЦ</div>
+              <button class="btn btn-primary js-open-modal" style="width: 100%;" data-modal-title="Заказать тариф Малый бизнес">Выбрать тариф</button>
+            </div>
+          </div>
+
+          <div class="tariff-card featured">
+            <div>
+              <span class="badge badge-dark">ОТ 50 ДО 100 РАБОТНИКОВ</span>
+              <h3 class="tariff-title">Тарифный план "Средний бизнес"</h3>
+            </div>
+            <div>
+              <div class="tariff-price">ОТ 30000 РУБ./МЕСЯЦ</div>
+              <button class="btn btn-primary js-open-modal" style="width: 100%;" data-modal-title="Заказать тариф Средний бизнес">Выбрать тариф</button>
+            </div>
+          </div>
+
+          <div class="tariff-card">
+            <div>
+              <span class="badge">СВЫШЕ 100 РАБОТНИКОВ</span>
+              <h3 class="tariff-title">Тарифный план "Корпоративный"</h3>
+            </div>
+            <div>
+              <div class="tariff-price">ОТ 40000 РУБ./МЕСЯЦ</div>
+              <button class="btn btn-primary js-open-modal" style="width: 100%;" data-modal-title="Заказать тариф Корпоративный">Выбрать тариф</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         7. WORK PROCESS / STEPS SECTION (3-COLUMN IZOMETRY ROW LIST)
+         ========================================================================== -->
+    <section class="section" id="steps">
+      <div class="container">
+        <div class="section-header">
+          <span class="badge">ПРОЦЕСС РАБОТЫ</span>
+          <h2>ЭТАПЫ ОКАЗАНИЯ УСЛУГ<br>В ОБЛАСТИ ОХРАНЫ ТРУДА</h2>
+        </div>
+
+        <div class="steps-list">
+          <!-- Row 1 -->
+          <div class="step-row">
+            <div class="step-number">| Этап №01 |</div>
+            <div class="step-title">ПЕРВИЧНАЯ КОНСУЛЬТАЦИЯ И ОЦЕНКА ПОТРЕБНОСТЕЙ</div>
+            <div class="step-desc">
+              <ul>
+                <li>Выявление потребности в услугах по охране труда;</li>
+                <li>Определение объема и сроков выполнения предоставляемых услуг (с учетом особенностей компании).</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="step-row">
+            <div class="step-number">| Этап №02 |</div>
+            <div class="step-title">РАЗРАБОТКА И НАПРАВЛЕНИЕ КП</div>
+            <div class="step-desc">
+              <ul>
+                <li>Отражение состава, описания и сроков предоставления услуг в области охраны труда;</li>
+                <li>Определение стоимости оказания услуг в области охраны труда и порядка оплаты;</li>
+                <li>Направление коммерческого предложения на рассмотрение Заказчику;</li>
+                <li>Заключение договора на оказание услуг.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="step-row">
+            <div class="step-number">| Этап №03 |</div>
+            <div class="step-title">ОКАЗАНИЕ УСЛУГ ПО ДОГОВОРУ</div>
+            <div class="step-desc">
+              <ul>
+                <li>Очное посещение объекта Заказчика (при необходимости): наблюдение за безопасностью производства работ и применением правил ОТ работниками, выявление возможных рисков на рабочих местах, предоставление информационной поддержки по охране труда и других мероприятий;</li>
+                <li>Дистанционное создание или актуализация необходимой документации для оказания услуг в соответствии с законодательными требованиями;</li>
+                <li>Предоставление и доработка результатов с детализацией выполненной работы в области ОТ.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         8. COVERAGE & REGIONS (INTERACTIVE MAP WIDGET)
+         ========================================================================== -->
+    <section class="section" id="regions">
+      <div class="container">
+        <div class="section-header">
+          <span class="badge">ГЕОГРАФИЯ УСЛУГ</span>
+          <h2>РАБОТАЕМ В ЯРОСЛАВСКОЙ ОБЛАСТИ<br>И СОСЕДНИХ РЕГИОНАХ</h2>
+          <p>
+            Выезжаем на предприятия в Ярославской области и соседних регионах. Документы, нормативную базу, консультацию и ряд других услуг можем подготовить дистанционно для организаций по всей России.
+          </p>
+        </div>
+
+        <div class="regions-grid">
+          <!-- Dark Vector Regional Map Image -->
+          <div class="map-card-wrapper">
+            <div class="map-badge-overlay" id="mapBadgeOverlay">ЯРОСЛАВСКАЯ ОБЛАСТЬ: РЫБИНСК И ЯРОСЛАВЛЬ</div>
+            <img src="assets/yaroslavl_oblast_dark_map.jpg" alt="Карта Ярославской области — ООО ПрофЭксперт" class="regions-map-img">
+          </div>
+
+          <!-- Interactive List -->
+          <div class="regions-list">
+            <div class="region-item active" data-map-state="rybinsk">
+              <div>
+                <strong>РЫБИНСК</strong>
+                <span class="region-info-desc">Главный офис ООО «ПрофЭксперт»</span>
+              </div>
+              <span class="region-type">ОФИС</span>
+            </div>
+
+            <div class="region-item" data-map-state="yaroslavl">
+              <div>
+                <strong>ЯРОСЛАВЛЬ</strong>
+                <span class="region-info-desc">Быстрый выезд экспертов за 1 час</span>
+              </div>
+              <span class="region-type">ВЫЕЗД</span>
+            </div>
+
+            <div class="region-item" data-map-state="oblast">
+              <div>
+                <strong>ЯРОСЛАВСКАЯ ОБЛАСТЬ</strong>
+                <span class="region-info-desc">100% охват всех районов области</span>
+              </div>
+              <span class="region-type">ВЫЕЗД</span>
+            </div>
+
+            <div class="region-item" data-map-state="neighbors">
+              <div>
+                <strong>СОСЕДНИЕ РЕГИОНЫ</strong>
+                <span class="region-info-desc">Кострома, Вологда, Иваново, Тверь, Владимир</span>
+              </div>
+              <span class="region-type">ВЫЕЗД</span>
+            </div>
+
+            <div class="region-item" data-map-state="russia">
+              <div>
+                <strong>ВСЯ РОССИЯ</strong>
+                <span class="region-info-desc">Электронный документооборот и очные выезды</span>
+              </div>
+              <span class="region-type">ДИСТАНЦИОННО</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         9. BLOG & ARTICLES
+         ========================================================================== -->
+    <section class="section" id="blog">
+      <div class="container">
+        <div class="section-header">
+          <h2>ПОЛЕЗНЫЕ СТАТЬИ ПО ОХРАНЕ ТРУДА</h2>
+        </div>
+
+        <div class="blog-grid">
+          <a href="blog/article-template.html" class="blog-card" target="_blank" rel="noopener">
+            <div>
+              <h3>Изменения законодательства</h3>
+            </div>
+            <div class="blog-footer">ДАТА • ТЕГ</div>
+          </a>
+
+          <a href="blog/podgotovka-k-proverkam.html" class="blog-card" target="_blank" rel="noopener">
+            <div>
+              <h3>Подготовка к проверкам</h3>
+            </div>
+            <div class="blog-footer">ДАТА • ТЕГ</div>
+          </a>
+
+          <a href="blog/proizvodstvennaya-bezopasnost.html" class="blog-card" target="_blank" rel="noopener">
+            <div>
+              <h3>Производственная безопасность</h3>
+            </div>
+            <div class="blog-footer">ДАТА • ТЕГ</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         10. CTA BANNER
+         ========================================================================== -->
+    <section class="cta-banner">
+      <div class="container">
+        <h2>Не ждите проверки! Выстройте систему безопасности заранее</h2>
+        <p>
+          Получите консультацию эксперта ООО «ПрофЭксперт». Мы оценим текущую ситуацию, расскажем о возможных рисках и предложим оптимальный формат сопровождения.
+        </p>
+        <button class="btn btn-primary js-open-modal" data-modal-title="Получить бесплатную консультацию" id="ctaBannerBtn">
+          Получить консультацию
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================================================
+       11. FOOTER (HUGE TYPOGRAPHY ARCHITECTURAL STYLE)
+       ========================================================================== -->
+  <footer class="footer" id="contacts">
+    <div class="container">
+      <div class="footer-hero-contacts">
+        <a href="tel:+79775558866" class="footer-phone">+7-977-555-88-66</a>
+        <a href="mailto:info@profexpert76.ru" class="footer-email">INFO@PROFEXPERT76.RU</a>
+      </div>
+
+      <div class="footer-nav-grid">
+        <div>
+          <div class="logo" style="margin-bottom: 16px;">
+            <img src="assets/logo_transparent.png" alt="ООО ПрофЭксперт" class="brand-logo-img">
+            <div class="logo-text">
+              <span>Охрана труда для предприятий</span>
+            </div>
+          </div>
+          <p style="font-size: 13px; color: var(--color-secondary);">
+            Профессиональный аутсорсинг охраны труда, проведение СОУТ, оценка рисков и подготовка к проверкам Роструда.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">УСЛУГИ</h4>
+          <ul class="footer-list">
+            <li><a href="#services">Аутсорсинг охраны труда</a></li>
+            <li><a href="#services">Разработка документов</a></li>
+            <li><a href="#services">Обучение сотрудников</a></li>
+            <li><a href="#services">Подготовка к проверкам</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">КОМПАНИЯ</h4>
+          <ul class="footer-list">
+            <li><a href="#about">О нас</a></li>
+            <li><a href="#industry">Специалисты</a></li>
+            <li><a href="#advantages">Сертификаты</a></li>
+            <li><a href="#blog">Статьи</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">КОНТАКТЫ</h4>
+          <ul class="footer-list">
+            <li><a href="#regions">Рыбинск (Офис)</a></li>
+            <li><a href="tel:+79775558866">Телефон</a></li>
+            <li><a href="mailto:info@profexpert76.ru">Email</a></li>
+            <li><a href="#regions">Офис и выезды</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 ООО «ПрофЭксперт». Все права защищены.</div>
+        <div>Охрана труда и промышленная безопасность</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       MODAL WINDOW FORM
+       ========================================================================== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <button class="modal-close" id="modalCloseBtn">&times;</button>
+      <h3 id="modalTitle" style="margin-bottom: 8px;">Получить консультацию</h3>
+      <p style="margin-bottom: 24px; font-size: 14px;">Оставьте контакты — эксперт свяжется с вами для уточнения деталей.</p>
+
+      <form id="leadForm">
+        <div class="form-group">
+          <label for="formName">Ваше имя</label>
+          <input type="text" id="formName" class="form-input" placeholder="Иван Иванов" required>
+        </div>
+
+        <div class="form-group">
+          <label for="formPhone">Телефон</label>
+          <input type="tel" id="formPhone" class="form-input" placeholder="+7 (___) ___-__-__" required>
+        </div>
+
+        <div class="form-group">
+          <label for="formCompany">Компания / Отрасль</label>
+          <input type="text" id="formCompany" class="form-input" placeholder="ООО Название">
+        </div>
+
+        <button type="submit" class="btn btn-primary form-submit">Отправить заявку</button>
+        <div class="toast-success" id="toastSuccess"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
