@@ -14,7 +14,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import urllib.request
 from urllib.parse import parse_qs, urlparse
 
-PORT = 8085
+PORT = int(os.environ.get("PORT", 8085))
 DB_FILE = os.path.join(os.path.dirname(__file__), "database.db")
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), "config.json")
 

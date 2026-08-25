@@ -1,0 +1,12 @@
+﻿run = "python server.py"
+entrypoint = "server.py"
+
+[nix]
+channel = "stable-23_11"
+
+[deployment]
+run = ["python", "server.py"]
+
+[[ports]]
+localPort = 8085
+externalPort = 80
