@@ -453,4 +453,32 @@ document.addEventListener('DOMContentLoaded', () => {
       cookieBanner.classList.remove('show');
     });
   }
+
+  /* ==========================================================================
+     AUTHENTIC IZOMETRY SMOOTHSCROLL ENGINE (EXACT MATCH FROM IZOMETRY.RU)
+     ========================================================================== */
+  if (typeof SmoothScroll === 'function') {
+    SmoothScroll({
+      // Время анимации (в мс):
+      animationTime    : 900,
+      // Размер шага (в пикселях):
+      stepSize         : 70,
+
+      // Ускорение:
+      accelerationDelta : 30,  
+      accelerationMax   : 2,   
+
+      // Поддержка клавиатуры:
+      keyboardSupport   : true,  
+      arrowScroll       : 50,
+
+      // Pulse (алгоритм физики сглаживания):
+      pulseAlgorithm   : true,
+      pulseScale       : 4,
+      pulseNormalize   : 1,
+
+      // Поддержка тачпада:
+      touchpadSupport   : true,
+    });
+  }
 });
