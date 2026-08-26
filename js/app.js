@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Form Submission Handling
   const leadForm = document.getElementById('leadForm');
   const toastSuccess = document.getElementById('toastSuccess');
+  const formConsent = document.getElementById('formConsent');
 
   if (leadForm) {
     leadForm.addEventListener('submit', async (e) => {
@@ -65,6 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!phoneInput || !phoneInput.value.trim()) {
         alert('Пожалуйста, введите ваш телефон.');
+        return;
+      }
+
+      if (formConsent && !formConsent.checked) {
+        alert('Пожалуйста, подтвердите согласие на обработку персональных данных.');
         return;
       }
 
@@ -89,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toastSuccess.textContent = result.message || 'Заявка успешно отправлена!';
           }
           leadForm.reset();
+          if (formConsent) formConsent.checked = true;
           setTimeout(() => {
             if (toastSuccess) toastSuccess.style.display = 'none';
             if (modalOverlay) modalOverlay.classList.remove('active');
@@ -102,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
           toastSuccess.textContent = 'Заявка принята! Мы свяжемся с вами.';
         }
         leadForm.reset();
+        if (formConsent) formConsent.checked = true;
         setTimeout(() => {
           if (toastSuccess) toastSuccess.style.display = 'none';
           if (modalOverlay) modalOverlay.classList.remove('active');
@@ -373,5 +381,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     fetchPublishedArticles();
+  }
+
+  /* ==========================================================================
+     COOKIE CONSENT CONTROLLER (152-FZ)
+     ========================================================================== */
+  const cookieBanner = document.getElementById('cookieBanner');
+  const cookieAcceptBtn = document.getElementById('cookieAcceptBtn');
+
+  if (cookieBanner && cookieAcceptBtn) {
+    const isConsentGiven = localStorage.getItem('profexpert_cookie_consent');
+    if (!isConsentGiven) {
+      setTimeout(() => {
+        cookieBanner.classList.add('show');
+      }, 1000);
+    }
+
+    cookieAcceptBtn.addEventListener('click', () => {
+      localStorage.setItem('profexpert_cookie_consent', 'true');
+      cookieBanner.classList.remove('show');
+    });
   }
 });

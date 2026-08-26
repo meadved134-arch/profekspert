@@ -12,3 +12,5 @@ venv/
 .venv/
 
 .vercel
+
+cloudflared.exe
