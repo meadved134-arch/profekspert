@@ -944,18 +944,20 @@ a:hover {
   letter-spacing: -0.03em;
   color: var(--color-primary);
   line-height: 1;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 12px;
 }
 
 .why-us-card-stat span {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-secondary);
-  letter-spacing: 0;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
+  line-height: 1.2;
+  padding-bottom: 3px;
 }
 
 .why-us-card-desc {
@@ -974,6 +976,13 @@ a:hover {
   .why-us-left {
     position: static;
     padding-right: 0;
+  }
+
+  .why-us-left .btn {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    text-align: center !important;
   }
 
   .why-us-card {
@@ -1684,32 +1693,29 @@ a:hover {
   }
 }
 
-@media (max-width: 768px) {
-  .diagram-grid {
-    grid-template-columns: 1fr;
-  }
+/* Default Desktop Hiding of Mobile Storytelling Badges */
+.risk-tag-mobile,
+.diagram-solution-tag-mobile {
+  display: none;
+}
 
-  .diagram-summary-card {
-    flex-direction: column;
-    text-align: center;
-    padding: 24px;
-  }
-
-  .diagram-summary-card .btn {
-    width: 100%;
-  }
+/* Breakpoint for Tablets and Navigation: 992px */
+@media (max-width: 992px) {
   .nav-menu {
     position: fixed;
     top: var(--header-height);
     left: 0;
     width: 100%;
-    background: var(--color-bg-main);
+    background: rgba(251, 251, 251, 0.98);
+    backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     flex-direction: column;
-    padding: 30px 24px;
-    gap: 20px;
-    align-items: flex-start;
+    padding: 24px;
+    gap: 16px;
+    align-items: stretch;
     display: none;
+    z-index: 1001;
   }
 
   .nav-menu.active {
@@ -1717,11 +1723,84 @@ a:hover {
   }
 
   .mobile-toggle {
-    display: flex;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 28px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1002;
+  }
+
+  .mobile-toggle span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: var(--color-primary);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-toggle.active span:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+  }
+
+  .mobile-toggle.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-toggle.active span:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
   }
 
   .header-btn {
-    display: none;
+    display: none !important;
+  }
+}
+
+/* Breakpoint for Mobile Devices: 768px */
+@media (max-width: 768px) {
+  /* Typography & Line Heights for H2 descriptions */
+  h1 {
+    font-size: clamp(1.75rem, 6.5vw, 2.4rem);
+    line-height: 1.2;
+  }
+
+  h2, .section-header h2, .section-header-split h2, .why-us-left h2 {
+    font-size: clamp(1.4rem, 5.5vw, 1.75rem) !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  .section-header p,
+  .section-header-split p,
+  .hero-content p,
+  .why-us-left p,
+  .cta-banner p {
+    font-size: 14px !important;
+    line-height: 1.48 !important;
+    margin-top: 10px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .section {
+    padding: 50px 0;
+  }
+
+  /* Hero Actions Full Width & Perfectly Aligned */
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .hero-actions .btn {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    text-align: center !important;
   }
 
   .hero-grid, .regions-grid {
@@ -1729,28 +1808,99 @@ a:hover {
   }
 
   .hero-image-wrapper, .regions-image-wrapper {
-    height: 280px;
+    height: 260px;
   }
 
-  .steps-grid {
+  /* Mobile Storytelling for Risks Diagram */
+  .diagram-svg {
+    display: none !important;
+  }
+
+  .diagram-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
-  .advantages-grid {
+  .diagram-core-node {
+    order: -1;
+    margin-bottom: 12px;
+  }
+
+  .core-node-inner {
+    padding: 18px 24px;
+    font-size: 1.05rem;
+    box-shadow: 0 4px 16px rgba(2, 2, 3, 0.2);
+  }
+
+  .risk-node {
+    border-left: 3px solid #dc2626 !important;
+    background: var(--color-bg-surface);
+    padding: 20px 20px 20px 22px;
+  }
+
+  .risk-tag-mobile {
+    display: inline-block !important;
+    font-size: 10px;
+    font-weight: 700;
+    color: #dc2626;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .diagram-summary-card {
+    border: 2px solid #16a34a !important;
+    background: #fcfdfc !important;
+    flex-direction: column;
+    text-align: left;
+    padding: 24px;
+    gap: 16px;
+  }
+
+  .diagram-solution-tag-mobile {
+    display: inline-block !important;
+    font-size: 10px;
+    font-weight: 700;
+    color: #16a34a;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .diagram-summary-card .btn {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* Advantages button full width on mobile */
+  .why-us-left .btn {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* Steps and other grids */
+  .step-row {
     grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 24px 0;
   }
 
-  .section {
-    padding: 60px 0;
+  .step-number {
+    font-size: 13px;
+  }
+
+  .footer-nav-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
   }
 }
 
 @media (max-width: 580px) {
   .risks-grid, .services-grid, .blog-grid, .industry-grid, .tariffs-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .footer-nav-grid {
     grid-template-columns: 1fr;
   }
 
