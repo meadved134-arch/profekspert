@@ -1490,23 +1490,27 @@ a:hover {
 }
 
 .footer-phone {
-  display: block;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  display: inline-block;
+  max-width: 100%;
+  font-size: clamp(1.4rem, 6.6vw, 4.5rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--color-primary);
-  line-height: 1;
+  line-height: 1.1;
   margin-bottom: 12px;
+  white-space: nowrap;
 }
 
 .footer-email {
-  display: block;
-  font-size: clamp(1.8rem, 4vw, 3rem);
+  display: inline-block;
+  max-width: 100%;
+  font-size: clamp(1.05rem, 4.9vw, 3rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-secondary);
-  line-height: 1;
+  line-height: 1.1;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .footer-phone:hover, .footer-email:hover {
@@ -1891,6 +1895,21 @@ a:hover {
 
   .step-number {
     font-size: 13px;
+  }
+
+  .footer-hero-contacts {
+    padding-bottom: 36px;
+    margin-bottom: 36px;
+  }
+
+  .footer-phone {
+    font-size: clamp(1.35rem, 6.4vw, 2.2rem) !important;
+    white-space: nowrap !important;
+  }
+
+  .footer-email {
+    font-size: clamp(0.95rem, 4.8vw, 1.6rem) !important;
+    white-space: nowrap !important;
   }
 
   .footer-nav-grid {
