@@ -425,12 +425,12 @@ a:hover {
 /* SVG Arrowheads and connecting lines animation */
 #arrowhead-red path {
   opacity: 0;
-  transition: opacity 0.25s ease 0.9s;
+  transition: opacity 0.35s ease 2.7s;
 }
 
 #arrowhead-green path {
   opacity: 0;
-  transition: opacity 0.25s ease 1.75s;
+  transition: opacity 0.35s ease 4.7s;
 }
 
 .risks-diagram-container.animated #arrowhead-red path,
@@ -442,14 +442,14 @@ a:hover {
   stroke: #dc2626;
   stroke-width: 2;
   opacity: 0;
-  transition: stroke-dashoffset 1s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.15s ease;
+  transition: stroke-dashoffset 3s cubic-bezier(0.2, 0.8, 0.25, 1), opacity 0.3s ease;
 }
 
 .diagram-solution-line {
   stroke: #16a34a;
   stroke-width: 2.5;
   opacity: 0;
-  transition: stroke-dashoffset 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.95s, opacity 0.2s ease 0.95s;
+  transition: stroke-dashoffset 2s cubic-bezier(0.2, 0.8, 0.25, 1) 2.9s, opacity 0.3s ease 2.9s;
 }
 
 .risks-diagram-container.animated .diagram-risk-line {
