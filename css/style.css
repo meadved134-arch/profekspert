@@ -422,24 +422,43 @@ a:hover {
   overflow: visible;
 }
 
+/* SVG Arrowheads and connecting lines animation */
+#arrowhead-red path {
+  opacity: 0;
+  transition: opacity 0.25s ease 0.9s;
+}
+
+#arrowhead-green path {
+  opacity: 0;
+  transition: opacity 0.25s ease 1.75s;
+}
+
+.risks-diagram-container.animated #arrowhead-red path,
+.risks-diagram-container.animated #arrowhead-green path {
+  opacity: 1;
+}
+
 .diagram-risk-line {
   stroke: #dc2626;
   stroke-width: 2;
-  transition: stroke-dashoffset 1.1s cubic-bezier(0.25, 1, 0.5, 1);
+  opacity: 0;
+  transition: stroke-dashoffset 1s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.15s ease;
 }
 
 .diagram-solution-line {
   stroke: #16a34a;
   stroke-width: 2.5;
-  transition: stroke-dashoffset 0.85s cubic-bezier(0.25, 1, 0.5, 1);
+  opacity: 0;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.95s, opacity 0.2s ease 0.95s;
 }
 
 .risks-diagram-container.animated .diagram-risk-line {
+  opacity: 1;
   stroke-dashoffset: 0 !important;
 }
 
 .risks-diagram-container.animated .diagram-solution-line {
-  transition-delay: 0.95s;
+  opacity: 1;
   stroke-dashoffset: 0 !important;
 }
 
