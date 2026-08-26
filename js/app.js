@@ -223,18 +223,41 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // IntersectionObserver for trigger animation on scroll
+  // IntersectionObserver for trigger animation on scroll (strictly when user scrolls to central node)
   const diagramContainerEl = document.getElementById('risksDiagramContainer');
-  if ('IntersectionObserver' in window && diagramContainerEl) {
+  const coreNodeEl = document.querySelector('.core-node-inner');
+
+  if ('IntersectionObserver' in window && diagramContainerEl && coreNodeEl) {
     const diagramObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
+        // Trigger only when the central core node enters comfortable viewing range (below header, above fold)
         if (entry.isIntersecting) {
-          diagramContainerEl.classList.add('animated');
-          diagramObserver.unobserve(diagramContainerEl);
+          const rect = coreNodeEl.getBoundingClientRect();
+          if (rect.top <= window.innerHeight * 0.75 && rect.top > 60) {
+            diagramContainerEl.classList.add('animated');
+            diagramObserver.unobserve(coreNodeEl);
+          }
         }
       });
-    }, { threshold: 0.2 });
-    diagramObserver.observe(diagramContainerEl);
+    }, { 
+      threshold: 0.2,
+      rootMargin: '0px 0px -120px 0px'
+    });
+    diagramObserver.observe(coreNodeEl);
+
+    // Scroll listener fallback for smooth trigger when user scrolls into view
+    const scrollTrigger = () => {
+      if (diagramContainerEl.classList.contains('animated')) {
+        window.removeEventListener('scroll', scrollTrigger);
+        return;
+      }
+      const rect = coreNodeEl.getBoundingClientRect();
+      if (rect.top > 60 && rect.top <= window.innerHeight * 0.75) {
+        diagramContainerEl.classList.add('animated');
+        window.removeEventListener('scroll', scrollTrigger);
+      }
+    };
+    window.addEventListener('scroll', scrollTrigger, { passive: true });
   } else if (diagramContainerEl) {
     diagramContainerEl.classList.add('animated');
   }
