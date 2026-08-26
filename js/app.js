@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 5. Dynamic SVG Diagram Connecting Lines
+  // 5. Dynamic SVG Diagram Connecting Lines (Animated Red Threats & Green Solution)
   function drawDiagramLines() {
     const container = document.getElementById('risksDiagramContainer');
     const svg = document.getElementById('diagramSvg');
@@ -142,7 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
       y: coreRect.top + coreRect.height / 2 - containerRect.top
     };
 
-    // 1. Draw 6 incoming lines from risk cards to central node
+    const isAnimated = container.classList.contains('animated');
+
+    // 1. Draw 6 incoming RED lines from risk cards to central node
     const cards = container.querySelectorAll('.risk-node');
     cards.forEach(card => {
       const cardRect = card.getBoundingClientRect();
@@ -161,14 +163,19 @@ document.addEventListener('DOMContentLoaded', () => {
       line.setAttribute('y1', cardEdge.y);
       line.setAttribute('x2', coreEdge.x);
       line.setAttribute('y2', coreEdge.y);
-      line.setAttribute('stroke', '#020203');
+      line.setAttribute('stroke', '#dc2626');
       line.setAttribute('stroke-width', '2');
-      line.setAttribute('marker-end', 'url(#arrowhead)');
+      line.setAttribute('marker-end', 'url(#arrowhead-red)');
+      line.classList.add('diagram-risk-line');
+
+      const length = Math.hypot(coreEdge.x - cardEdge.x, coreEdge.y - cardEdge.y);
+      line.style.strokeDasharray = `${length}`;
+      line.style.strokeDashoffset = isAnimated ? '0' : `${length}`;
 
       svg.appendChild(line);
     });
 
-    // 2. Draw 1 outgoing line from bottom of "ВАШ БИЗНЕС" to top of summary card
+    // 2. Draw 1 outgoing GREEN line from bottom of "ВАШ БИЗНЕС" to top of summary card
     if (summaryCard) {
       const summaryRect = summaryCard.getBoundingClientRect();
       const startX = coreCenter.x;
@@ -182,9 +189,14 @@ document.addEventListener('DOMContentLoaded', () => {
         line.setAttribute('y1', startY);
         line.setAttribute('x2', endX);
         line.setAttribute('y2', endY);
-        line.setAttribute('stroke', '#020203');
-        line.setAttribute('stroke-width', '2');
-        line.setAttribute('marker-end', 'url(#arrowhead)');
+        line.setAttribute('stroke', '#16a34a');
+        line.setAttribute('stroke-width', '2.5');
+        line.setAttribute('marker-end', 'url(#arrowhead-green)');
+        line.classList.add('diagram-solution-line');
+
+        const length = endY - startY;
+        line.style.strokeDasharray = `${length}`;
+        line.style.strokeDashoffset = isAnimated ? '0' : `${length}`;
 
         svg.appendChild(line);
       }
@@ -209,6 +221,22 @@ document.addEventListener('DOMContentLoaded', () => {
       x: cx + factor * cos,
       y: cy + factor * sin
     };
+  }
+
+  // IntersectionObserver for trigger animation on scroll
+  const diagramContainerEl = document.getElementById('risksDiagramContainer');
+  if ('IntersectionObserver' in window && diagramContainerEl) {
+    const diagramObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          diagramContainerEl.classList.add('animated');
+          diagramObserver.unobserve(diagramContainerEl);
+        }
+      });
+    }, { threshold: 0.2 });
+    diagramObserver.observe(diagramContainerEl);
+  } else if (diagramContainerEl) {
+    diagramContainerEl.classList.add('animated');
   }
 
   // Initial draw and resize handlers

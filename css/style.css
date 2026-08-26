@@ -422,6 +422,27 @@ a:hover {
   overflow: visible;
 }
 
+.diagram-risk-line {
+  stroke: #dc2626;
+  stroke-width: 2;
+  transition: stroke-dashoffset 0.85s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.diagram-solution-line {
+  stroke: #16a34a;
+  stroke-width: 2.5;
+  transition: stroke-dashoffset 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.risks-diagram-container.animated .diagram-risk-line {
+  stroke-dashoffset: 0 !important;
+}
+
+.risks-diagram-container.animated .diagram-solution-line {
+  transition-delay: 0.75s;
+  stroke-dashoffset: 0 !important;
+}
+
 .diagram-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
