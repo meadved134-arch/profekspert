@@ -204,7 +204,7 @@ a:hover {
 
 /* Section Wrapper */
 .section {
-  padding: 90px 0;
+  padding: 70px 0;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -583,7 +583,11 @@ a:hover {
 .services-list-container {
   border-top: 1px solid var(--color-border);
   margin-top: 36px;
-  margin-bottom: 64px;
+  margin-bottom: 0;
+}
+
+.services-list-container:first-of-type {
+  margin-bottom: 56px;
 }
 
 .service-row-item {
