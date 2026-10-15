@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     yaroslavl: {
       transform: 'matrix(2.3, 0, 0, 2.3, -560, -310)',
-      badge: 'ЯРОСЛАВЛЬ: ВЫЕЗД ЗА 1 ЧАС',
+      badge: 'ЯРОСЛАВЛЬ: ВЫЕЗД СПЕЦИАЛИСТОВ НА ПРЕДПРИЯТИЯ',
       action: () => {
         if (yaroslavlPath) yaroslavlPath.classList.add('active');
         if (neighborPaths) neighborPaths.forEach(p => p.classList.remove('active'));
