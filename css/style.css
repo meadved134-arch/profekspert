@@ -367,6 +367,11 @@ a:hover {
   gap: 16px;
 }
 
+.hero-actions .btn {
+  min-width: 280px;
+  justify-content: center;
+}
+
 .hero-image-wrapper {
   position: relative;
   width: 100%;
