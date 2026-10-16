@@ -26,7 +26,13 @@ DEFAULT_CONFIG = {
     "smtp_port": 465,
     "smtp_user": "info@profexpert76.ru",
     "smtp_password": "",
-    "recipient_email": "info@profexpert76.ru"
+    "recipient_email": "info@profexpert76.ru",
+    "telegram_enabled": False,
+    "telegram_bot_token": "",
+    "telegram_chat_id": "",
+    "max_enabled": False,
+    "max_bot_token": "",
+    "max_recipient_id": ""
 }
 
 def get_config():
@@ -241,6 +247,53 @@ def send_telegram_notification(name, phone, company, created_at, source):
                     print(f"[TG ERROR] Telegram response error for {chat_id}: {res_data}")
         except Exception as e:
             print(f"[TG ERROR] Failed to send telegram notification to {chat_id}: {e}")
+
+def send_max_notification(name, phone, company, created_at, source):
+    config = get_config()
+    if not config.get("max_enabled"):
+        return
+    token = config.get("max_bot_token", "").strip()
+    raw_recipient_ids = config.get("max_recipient_id", "")
+    if not token or not raw_recipient_ids:
+        return
+
+    if isinstance(raw_recipient_ids, list):
+        recipients = [str(r).strip() for r in raw_recipient_ids if str(r).strip()]
+    else:
+        recipients = [r.strip() for r in str(raw_recipient_ids).split(',') if r.strip()]
+
+    text = f"""🔥 НОВАЯ ЗАЯВКА С САЙТА
+━━━━━━━━━━━━━━━━━━━━
+👤 Имя клиента: {name}
+📞 Телефон: {phone}
+🏢 Компания: {company if company else 'Не указано'}
+📅 Дата и время: {created_at}
+📍 Источник: {source}
+━━━━━━━━━━━━━━━━━━━━
+💾 Заявка сохранена в базе данных"""
+
+    for rec_id in recipients:
+        try:
+            param = "chat_id" if str(rec_id).startswith("-") else "user_id"
+            url = f"https://platform-api2.max.ru/messages?{param}={rec_id}"
+            payload = json.dumps({"text": text}, ensure_ascii=False).encode('utf-8')
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={
+                    "Authorization": token,
+                    "Content-Type": "application/json"
+                }
+            )
+            import ssl
+            ssl_ctx = ssl.create_default_context()
+            ssl_ctx.check_hostname = False
+            ssl_ctx.verify_mode = ssl.CERT_NONE
+            with urllib.request.urlopen(req, timeout=10, context=ssl_ctx) as res:
+                res_data = json.loads(res.read().decode('utf-8'))
+                print(f"[MAX SUCCESS] Max notification sent to {rec_id}")
+        except Exception as e:
+            print(f"[MAX ERROR] Failed to send Max notification to {rec_id}: {e}")
 
 def get_all_articles():
     conn = sqlite3.connect(DB_FILE)
@@ -556,6 +609,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
             lead_id, created_at = save_lead(name, phone, company, source)
             threading.Thread(target=send_email_notification, args=(name, phone, company, created_at, source), daemon=True).start()
             threading.Thread(target=send_telegram_notification, args=(name, phone, company, created_at, source), daemon=True).start()
+            threading.Thread(target=send_max_notification, args=(name, phone, company, created_at, source), daemon=True).start()
 
             self._send_json({"success": True, "message": "Заявка успешно отправлена! Эксперт свяжется с вами.", "id": lead_id})
             return
@@ -635,7 +689,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
             body = self.rfile.read(content_length).decode('utf-8')
             data = json.loads(body)
             cfg = get_config()
-            for key in ["admin_password", "email_enabled", "smtp_server", "smtp_port", "smtp_user", "smtp_password", "recipient_email", "telegram_enabled", "telegram_bot_token", "telegram_chat_id"]:
+            for key in ["admin_password", "email_enabled", "smtp_server", "smtp_port", "smtp_user", "smtp_password", "recipient_email", "telegram_enabled", "telegram_bot_token", "telegram_chat_id", "max_enabled", "max_bot_token", "max_recipient_id"]:
                 if key in data:
                     cfg[key] = data[key]
             save_config(cfg)
@@ -646,7 +700,8 @@ class CustomHandler(SimpleHTTPRequestHandler):
             test_time = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
             threading.Thread(target=send_email_notification, args=("Тестовый клиент", "+7 (999) 000-00-00", "ООО «Тест»", test_time, "Тест из панели управления"), daemon=True).start()
             threading.Thread(target=send_telegram_notification, args=("Тестовый клиент", "+7 (999) 000-00-00", "ООО «Тест»", test_time, "Тест из панели управления"), daemon=True).start()
-            self._send_json({"success": True, "message": "Тестовые уведомления отправлены в Telegram и на Email!"})
+            threading.Thread(target=send_max_notification, args=("Тестовый клиент", "+7 (999) 000-00-00", "ООО «Тест»", test_time, "Тест из панели управления"), daemon=True).start()
+            self._send_json({"success": True, "message": "Тестовые уведомления отправлены в Telegram, Max и на Email!"})
             return
 
         self._send_json({"success": False, "error": "Not Found"}, status=404)
