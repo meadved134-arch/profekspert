@@ -24,9 +24,9 @@ DEFAULT_CONFIG = {
     "email_enabled": False,
     "smtp_server": "smtp.yandex.ru",
     "smtp_port": 465,
-    "smtp_user": "info@profexpert76.ru",
+    "smtp_user": "info@profekspert.site",
     "smtp_password": "",
-    "recipient_email": "info@profexpert76.ru",
+    "recipient_email": "info@profekspert.site",
     "telegram_enabled": False,
     "telegram_bot_token": "",
     "telegram_chat_id": "",
@@ -418,7 +418,7 @@ def generate_article_html(title, badge, read_time, author, created_at, blocks, s
     <div class="container">
       <div class="footer-hero-contacts">
         <a href="tel:+79775558866" class="footer-phone">+7-977-555-88-66</a>
-        <a href="mailto:info@profexpert76.ru" class="footer-email">INFO@PROFEXPERT76.RU</a>
+        <a href="mailto:ira_hamysh@mail.ru" class="footer-email">IRA_HAMYSH@MAIL.RU</a>
       </div>
 
       <div class="footer-nav-grid">
@@ -459,7 +459,7 @@ def generate_article_html(title, badge, read_time, author, created_at, blocks, s
           <ul class="footer-list">
             <li><a href="../index.html#regions">Рыбинск (Офис)</a></li>
             <li><a href="tel:+79775558866">Телефон</a></li>
-            <li><a href="mailto:info@profexpert76.ru">Email</a></li>
+            <li><a href="mailto:ira_hamysh@mail.ru">Email</a></li>
             <li><a href="../index.html#regions">Офис и выезды</a></li>
           </ul>
         </div>
