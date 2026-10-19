@@ -174,7 +174,7 @@ def send_email_notification(name, phone, company, created_at, source):
 Дата и время: {created_at}
 Источник: {source}
 -----------------------------------------
-Заявка также сохранена в панели управления: http://localhost:8085/admin/
+Заявка также сохранена в панели управления: https://profekspert.site/admin/
 """
         msg = MIMEText(body, 'plain', 'utf-8')
         msg['Subject'] = Header(f"🔥 Новая заявка: {name} ({phone}) — ООО «ПрофЭксперт»", 'utf-8')
