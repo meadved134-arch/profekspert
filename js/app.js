@@ -90,6 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await response.json();
 
         if (result.success) {
+          if (typeof ym === 'function') {
+            ym(113672774, 'reachGoal', 'zayavka');
+          }
           if (toastSuccess) {
             toastSuccess.style.display = 'block';
             toastSuccess.textContent = result.message || 'Заявка успешно отправлена!';
@@ -104,6 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
           alert(result.error || 'Ошибка отправки заявки.');
         }
       } catch (err) {
+        if (typeof ym === 'function') {
+          ym(113672774, 'reachGoal', 'zayavka');
+        }
         if (toastSuccess) {
           toastSuccess.style.display = 'block';
           toastSuccess.textContent = 'Заявка принята! Мы свяжемся с вами.';
@@ -115,6 +121,18 @@ document.addEventListener('DOMContentLoaded', () => {
           if (modalOverlay) modalOverlay.classList.remove('active');
         }, 3000);
       }
+    });
+
+    // Track phone and email clicks in Metrika
+    document.querySelectorAll('a[href^="tel:"]').forEach(el => {
+      el.addEventListener('click', () => {
+        if (typeof ym === 'function') ym(113672774, 'reachGoal', 'phone_click');
+      });
+    });
+    document.querySelectorAll('a[href^="mailto:"]').forEach(el => {
+      el.addEventListener('click', () => {
+        if (typeof ym === 'function') ym(113672774, 'reachGoal', 'email_click');
+      });
     });
   }
 
