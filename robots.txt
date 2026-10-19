@@ -1,0 +1,7 @@
+User-Agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+Host: https://profekspert.site
+Sitemap: https://profekspert.site/sitemap.xml

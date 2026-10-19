@@ -15,3 +15,12 @@ venv/
 
 cloudflared.exe
 .deploy.env
+
+# SEO pilot & keys
+seo/
+seo-pilot/
+.env
+# Docs & artifacts
+*.pdf
+FireShot*.png
+.agent/
