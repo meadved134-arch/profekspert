@@ -316,11 +316,85 @@ def get_all_articles():
         })
     return articles
 
+def update_sitemap_xml():
+    try:
+        base_dir = os.path.dirname(__file__)
+        sitemap_path = os.path.join(base_dir, "sitemap.xml")
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        urls = [
+            {"loc": "https://profekspert.site/", "lastmod": today, "changefreq": "weekly", "priority": "1.0"},
+            {"loc": "https://profekspert.site/privacy-policy.html", "lastmod": today, "changefreq": "monthly", "priority": "0.3"},
+            {"loc": "https://profekspert.site/user-agreement.html", "lastmod": today, "changefreq": "monthly", "priority": "0.3"}
+        ]
+
+        # Service landing pages
+        for landing in ["autsorsing-ot.html", "razrabotka-dokumentov-ot.html", "audit-ot.html"]:
+            if os.path.exists(os.path.join(base_dir, landing)):
+                urls.append({
+                    "loc": f"https://profekspert.site/{landing}",
+                    "lastmod": today,
+                    "changefreq": "weekly",
+                    "priority": "0.9"
+                })
+
+        # Database articles
+        try:
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+            cursor.execute("SELECT slug FROM articles WHERE slug != 'article-template' ORDER BY id DESC")
+            rows = cursor.fetchall()
+            conn.close()
+            for r in rows:
+                if r[0] == "article-template":
+                    continue
+                loc = f"https://profekspert.site/blog/{r[0]}.html"
+                if not any(u["loc"] == loc for u in urls):
+                    urls.append({
+                        "loc": loc,
+                        "lastmod": today,
+                        "changefreq": "monthly",
+                        "priority": "0.7"
+                    })
+        except Exception as e:
+            print(f"Error querying DB for sitemap: {e}", file=sys.stderr)
+
+        # Existing files in blog/
+        blog_dir = os.path.join(base_dir, "blog")
+        if os.path.exists(blog_dir):
+            for f in os.listdir(blog_dir):
+                if f.endswith(".html") and not f.startswith("article-template"):
+                    loc = f"https://profekspert.site/blog/{f}"
+                    if not any(u["loc"] == loc for u in urls):
+                        urls.append({
+                            "loc": loc,
+                            "lastmod": today,
+                            "changefreq": "monthly",
+                            "priority": "0.6"
+                        })
+
+        lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+        for u in urls:
+            lines.append('  <url>')
+            lines.append(f'    <loc>{u["loc"]}</loc>')
+            lines.append(f'    <lastmod>{u["lastmod"]}</lastmod>')
+            lines.append(f'    <changefreq>{u["changefreq"]}</changefreq>')
+            lines.append(f'    <priority>{u["priority"]}</priority>')
+            lines.append('  </url>')
+        lines.append('</urlset>\n')
+        xml_content = '\n'.join(lines)
+
+        with open(sitemap_path, "w", encoding="utf-8") as f:
+            f.write(xml_content)
+    except Exception as e:
+        print(f"Error updating sitemap.xml: {e}", file=sys.stderr)
+
 def generate_article_html(title, badge, read_time, author, created_at, blocks, slug):
     blog_dir = os.path.join(os.path.dirname(__file__), "blog")
     os.makedirs(blog_dir, exist_ok=True)
     file_path = os.path.join(blog_dir, f"{slug}.html")
 
+    desc = ""
     body_html = ""
     for block in blocks:
         btype = block.get("type")
@@ -329,6 +403,11 @@ def generate_article_html(title, badge, read_time, author, created_at, blocks, s
             body_html += f"<h2>{val}</h2>\n"
         elif btype == "p":
             body_html += f"<p>{val}</p>\n"
+            if not desc and val:
+                raw_text = re.sub(r'<[^>]+>', ' ', str(val))
+                clean_text = " ".join(raw_text.split()).strip()
+                if clean_text:
+                    desc = clean_text[:160]
         elif btype == "quote":
             author_text = block.get("author", "Эксперт ООО «ПрофЭксперт»")
             body_html += f'<blockquote class="article-quote"><p>«{val}»</p><cite>— {author_text}</cite></blockquote>\n'
@@ -346,13 +425,65 @@ def generate_article_html(title, badge, read_time, author, created_at, blocks, s
                 body_html += '</tr>'
             body_html += '</tbody></table></div>\n'
 
+    if not desc:
+        desc = f"{title}: практические рекомендации и требования законодательства от экспертов ООО «ПрофЭксперт»."
+
+    safe_title = title.replace('"', '&quot;')
+    safe_desc = desc.replace('"', '&quot;')
+    json_title = title.replace('"', '\\\\"').replace('\\n', ' ')
+    json_desc = desc.replace('"', '\\\\"').replace('\\n', ' ')
+    json_author = author.replace('"', '\\\\"').replace('\\n', ' ')
+
     html_content = f'''<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title} — ООО «ПрофЭксперт»</title>
+  <title>{safe_title} — ООО «ПрофЭксперт»</title>
+  <meta name="description" content="{safe_desc}">
+  <link rel="canonical" href="https://profekspert.site/blog/{slug}.html">
   <link rel="stylesheet" href="../css/style.css">
+
+  <!-- Schema.org Article Structured Data -->
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "mainEntityOfPage": {{
+      "@type": "WebPage",
+      "@id": "https://profekspert.site/blog/{slug}.html"
+    }},
+    "headline": "{json_title}",
+    "description": "{json_desc}",
+    "datePublished": "{created_at}",
+    "author": {{
+      "@type": "Person",
+      "name": "{json_author}"
+    }},
+    "publisher": {{
+      "@type": "Organization",
+      "name": "ООО «ПрофЭксперт»",
+      "logo": {{
+        "@type": "ImageObject",
+        "url": "https://profekspert.site/assets/logo_transparent.png"
+      }}
+    }}
+  }}
+  </script>
+
+  <!-- Yandex.Metrika counter -->
+  <script type="text/javascript">
+    (function(m,e,t,r,i,k,a){{
+        m[i]=m[i]||function(){{(m[i].a=m[i].a||[]).push(arguments)}};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {{if (document.scripts[j].src === r) {{ return; }}}}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    }})(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=113672774', 'ym');
+
+    ym(113672774, 'init', {{clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true}});
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/113672774" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <!-- /Yandex.Metrika counter -->
 </head>
 <body>
   <header class="header" id="header">
@@ -417,7 +548,7 @@ def generate_article_html(title, badge, read_time, author, created_at, blocks, s
   <footer class="footer" id="contacts">
     <div class="container">
       <div class="footer-hero-contacts">
-        <a href="tel:+79775558866" class="footer-phone">+7-977-555-88-66</a>
+        <a href="tel:+79159851322" class="footer-phone">+7 (915) 985-13-22</a>
         <a href="mailto:ira_hamysh@mail.ru" class="footer-email">IRA_HAMYSH@MAIL.RU</a>
       </div>
 
@@ -458,8 +589,8 @@ def generate_article_html(title, badge, read_time, author, created_at, blocks, s
           <h4 class="footer-col-title">КОНТАКТЫ</h4>
           <ul class="footer-list">
             <li><a href="../index.html#regions">Рыбинск (Офис)</a></li>
-            <li><a href="tel:+79775558866">Телефон</a></li>
-            <li><a href="mailto:ira_hamysh@mail.ru">Email</a></li>
+            <li><a href="tel:+79159851322">+7 (915) 985-13-22</a></li>
+            <li><a href="mailto:ira_hamysh@mail.ru">ira_hamysh@mail.ru</a></li>
             <li><a href="../index.html#regions">Офис и выезды</a></li>
           </ul>
         </div>
@@ -467,6 +598,11 @@ def generate_article_html(title, badge, read_time, author, created_at, blocks, s
 
       <div class="footer-bottom">
         <div>© 2026 ООО «ПрофЭксперт». Все права защищены.</div>
+        <div class="footer-legal-links">
+          <a href="../privacy-policy.html">Политика конфиденциальности</a>
+          <span>•</span>
+          <a href="../user-agreement.html">Согласие на обработку данных</a>
+        </div>
         <div>Охрана труда и промышленная безопасность</div>
       </div>
     </div>
@@ -535,6 +671,7 @@ def save_article(title, badge, read_time, author, created_at, blocks):
     ''', (created_at, title, badge, read_time, author, slug, json.dumps(blocks, ensure_ascii=False)))
     conn.commit()
     conn.close()
+    update_sitemap_xml()
     return slug, url
 
 def update_article(article_id, title, badge, read_time, author, created_at, blocks):
@@ -553,6 +690,7 @@ def update_article(article_id, title, badge, read_time, author, created_at, bloc
     ''', (title, badge, read_time, author, created_at, json.dumps(blocks, ensure_ascii=False), article_id))
     conn.commit()
     conn.close()
+    update_sitemap_xml()
     return slug
 
 def delete_article(article_id):
@@ -569,6 +707,7 @@ def delete_article(article_id):
         cursor.execute('DELETE FROM articles WHERE id = ?', (article_id,))
         conn.commit()
     conn.close()
+    update_sitemap_xml()
 
 
 class CustomHandler(SimpleHTTPRequestHandler):
