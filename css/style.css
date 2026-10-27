@@ -1,8 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 /* ==========================================================================
    IZOMETRY DESIGN SYSTEM FOR PROFEXPERT
    ========================================================================== */
+
+/* Modern picture container resets for zero CLS */
+.logo picture,
+.hero-image-wrapper picture,
+.map-card-wrapper picture {
+  display: contents;
+}
 
 :root {
   /* Colors */
