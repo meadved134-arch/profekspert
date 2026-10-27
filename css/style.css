@@ -1385,10 +1385,12 @@ a:hover {
 .blog-slider-wrapper {
   overflow-x: auto;
   scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-top: 6px;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
   margin-top: -6px;
 }
 
@@ -1397,22 +1399,29 @@ a:hover {
 }
 
 .blog-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(340px, 1fr);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: 24px;
+  align-items: stretch;
+  width: 100%;
 }
 
 .blog-card {
+  /* Desktop (> 1024px): 3 equal cards that fill container width perfectly */
+  flex: 0 0 calc((100% - 48px) / 3);
+  min-width: 320px;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   padding: 28px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 220px;
-  transition: all var(--transition-fast);
+  min-height: 230px;
+  height: auto;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
   text-decoration: none;
   color: inherit;
   cursor: pointer;
@@ -1427,12 +1436,15 @@ a:hover {
 }
 
 .blog-card h3 {
-  font-size: 1.15rem;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
   margin-top: 0;
+  margin-bottom: 16px;
   line-height: 1.35;
   text-transform: uppercase;
   font-weight: 700;
   color: var(--color-primary);
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .blog-footer {
@@ -1442,7 +1454,8 @@ a:hover {
   letter-spacing: 0.08em;
   font-weight: 600;
   border-top: 1px solid var(--color-border);
-  padding-top: 12px;
+  padding-top: 14px;
+  margin-top: auto;
 }
 
 /* ==========================================================================
@@ -1693,8 +1706,15 @@ a:hover {
     display: none;
   }
 
-  .risks-grid, .services-grid, .blog-grid {
+  .risks-grid, .services-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .blog-card {
+    /* Tablet (641px - 1024px): 2 equal cards per view */
+    flex: 0 0 calc((100% - 24px) / 2);
+    min-width: 280px;
+    padding: 24px;
   }
   
   .industry-grid, .tariffs-grid {
@@ -1922,8 +1942,32 @@ a:hover {
 }
 
 @media (max-width: 580px) {
-  .risks-grid, .services-grid, .blog-grid, .industry-grid, .tariffs-grid {
+  .risks-grid, .services-grid, .industry-grid, .tariffs-grid {
     grid-template-columns: 1fr;
+  }
+
+  .section-header-flex {
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .blog-grid {
+    gap: 16px;
+  }
+
+  .blog-card {
+    /* Mobile (<= 580px): 1 card per view with peek on right edge */
+    flex: 0 0 calc(100% - 24px);
+    min-width: 250px;
+    min-height: 200px;
+    padding: 20px 18px;
+  }
+
+  .blog-card h3 {
+    font-size: 1rem;
+    line-height: 1.3;
   }
 
   .footer-bottom {

@@ -1,502 +1,514 @@
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. Mobile Menu Toggle
-  const mobileToggle = document.getElementById('mobileToggle');
-  const navMenu = document.getElementById('navMenu');
-
-  if (mobileToggle && navMenu) {
-    mobileToggle.addEventListener('click', () => {
-      navMenu.classList.toggle('active');
-      mobileToggle.classList.toggle('active');
-    });
-
-    // Close menu when clicking links
-    document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        mobileToggle.classList.remove('active');
-      });
-    });
-  }
-
-  // 2. Modal Controller
-  const modalOverlay = document.getElementById('modalOverlay');
-  const modalCloseBtn = document.getElementById('modalCloseBtn');
-  const openModalBtns = document.querySelectorAll('.js-open-modal');
-  const modalTitle = document.getElementById('modalTitle');
-
-  openModalBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const customTitle = btn.getAttribute('data-modal-title');
-      if (customTitle && modalTitle) {
-        modalTitle.textContent = customTitle;
-      }
-      if (modalOverlay) {
-        modalOverlay.classList.add('active');
-      }
-    });
-  });
-
-  if (modalCloseBtn) {
-    modalCloseBtn.addEventListener('click', () => {
-      if (modalOverlay) modalOverlay.classList.remove('active');
-    });
-  }
-
-  if (modalOverlay) {
-    modalOverlay.addEventListener('click', (e) => {
-      if (e.target === modalOverlay) {
-        modalOverlay.classList.remove('active');
-      }
-    });
-  }
-
-  // 3. Form Submission Handling
-  const leadForm = document.getElementById('leadForm');
-  const toastSuccess = document.getElementById('toastSuccess');
-  const formConsent = document.getElementById('formConsent');
-
-  if (leadForm) {
-    leadForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const nameInput = document.getElementById('formName');
-      const phoneInput = document.getElementById('formPhone');
-      const companyInput = document.getElementById('formCompany');
-
-      if (!phoneInput || !phoneInput.value.trim()) {
-        alert('Пожалуйста, введите ваш телефон.');
-        return;
-      }
-
-      if (formConsent && !formConsent.checked) {
-        alert('Пожалуйста, подтвердите согласие на обработку персональных данных.');
-        return;
-      }
-
-      const payload = {
-        name: nameInput ? nameInput.value.trim() : 'Аноним',
-        phone: phoneInput.value.trim(),
-        company: companyInput ? companyInput.value.trim() : '',
-        source: modalTitle ? modalTitle.textContent : 'Форма на сайте'
-      };
-
-      try {
-        const response = await fetch('/api/leads', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const result = await response.json();
-
-        if (result.success) {
-          if (typeof ym === 'function') {
-            ym(113672774, 'reachGoal', 'zayavka');
-          }
-          if (toastSuccess) {
-            toastSuccess.style.display = 'block';
-            toastSuccess.textContent = result.message || 'Заявка успешно отправлена!';
-          }
-          leadForm.reset();
-          if (formConsent) formConsent.checked = true;
-          setTimeout(() => {
-            if (toastSuccess) toastSuccess.style.display = 'none';
-            if (modalOverlay) modalOverlay.classList.remove('active');
-          }, 3000);
-        } else {
-          alert(result.error || 'Ошибка отправки заявки.');
-        }
-      } catch (err) {
-        if (typeof ym === 'function') {
-          ym(113672774, 'reachGoal', 'zayavka');
-        }
-        if (toastSuccess) {
-          toastSuccess.style.display = 'block';
-          toastSuccess.textContent = 'Заявка принята! Мы свяжемся с вами.';
-        }
-        leadForm.reset();
-        if (formConsent) formConsent.checked = true;
-        setTimeout(() => {
-          if (toastSuccess) toastSuccess.style.display = 'none';
-          if (modalOverlay) modalOverlay.classList.remove('active');
-        }, 3000);
-      }
-    });
-
-    // Track phone and email clicks in Metrika
-    document.querySelectorAll('a[href^="tel:"]').forEach(el => {
-      el.addEventListener('click', () => {
-        if (typeof ym === 'function') ym(113672774, 'reachGoal', 'phone_click');
-      });
-    });
-    document.querySelectorAll('a[href^="mailto:"]').forEach(el => {
-      el.addEventListener('click', () => {
-        if (typeof ym === 'function') ym(113672774, 'reachGoal', 'email_click');
-      });
-    });
-  }
-
-  // 5. Dynamic SVG Diagram Connecting Lines (Animated Red Threats & Green Solution)
-  function drawDiagramLines() {
-    const container = document.getElementById('risksDiagramContainer');
-    const svg = document.getElementById('diagramSvg');
-    const coreNode = document.querySelector('.core-node-inner');
-    const summaryCard = document.querySelector('.diagram-summary-card');
-    if (!container || !svg || !coreNode) return;
-
-    // Remove old lines, preserve defs
-    const defs = svg.querySelector('defs');
-    svg.innerHTML = '';
-    if (defs) svg.appendChild(defs);
-
-    // Hide SVG on small screens where grid breaks into single column
-    if (window.innerWidth <= 1024) return;
-
-    const containerRect = container.getBoundingClientRect();
-    const coreRect = coreNode.getBoundingClientRect();
-
-    const coreCenter = {
-      x: coreRect.left + coreRect.width / 2 - containerRect.left,
-      y: coreRect.top + coreRect.height / 2 - containerRect.top
-    };
-
-    const isAnimated = container.classList.contains('animated');
-
-    // 1. Draw 6 incoming RED lines from risk cards to central node
-    const cards = container.querySelectorAll('.risk-node');
-    cards.forEach(card => {
-      const cardRect = card.getBoundingClientRect();
-      const cardCenter = {
-        x: cardRect.left + cardRect.width / 2 - containerRect.left,
-        y: cardRect.top + cardRect.height / 2 - containerRect.top
-      };
-
-      const angle = Math.atan2(coreCenter.y - cardCenter.y, coreCenter.x - cardCenter.x);
-
-      const cardEdge = getRectEdgePoint(cardRect, containerRect, angle);
-      const coreEdge = getRectEdgePoint(coreRect, containerRect, angle + Math.PI);
-
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', cardEdge.x);
-      line.setAttribute('y1', cardEdge.y);
-      line.setAttribute('x2', coreEdge.x);
-      line.setAttribute('y2', coreEdge.y);
-      line.setAttribute('stroke', '#dc2626');
-      line.setAttribute('stroke-width', '2');
-      line.setAttribute('marker-end', 'url(#arrowhead-red)');
-      line.classList.add('diagram-risk-line');
-
-      const length = Math.hypot(coreEdge.x - cardEdge.x, coreEdge.y - cardEdge.y);
-      line.style.strokeDasharray = `${length}`;
-      line.style.strokeDashoffset = isAnimated ? '0' : `${length}`;
-
-      svg.appendChild(line);
-    });
-
-    // 2. Draw 1 outgoing GREEN line from bottom of "ВАШ БИЗНЕС" to top of summary card
-    if (summaryCard) {
-      const summaryRect = summaryCard.getBoundingClientRect();
-      const startX = coreCenter.x;
-      const startY = coreRect.bottom - containerRect.top;
-      const endX = coreCenter.x;
-      const endY = summaryRect.top - containerRect.top;
-
-      if (endY > startY) {
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', startX);
-        line.setAttribute('y1', startY);
-        line.setAttribute('x2', endX);
-        line.setAttribute('y2', endY);
-        line.setAttribute('stroke', '#16a34a');
-        line.setAttribute('stroke-width', '2.5');
-        line.setAttribute('marker-end', 'url(#arrowhead-green)');
-        line.classList.add('diagram-solution-line');
-
-        const length = endY - startY;
-        line.style.strokeDasharray = `${length}`;
-        line.style.strokeDashoffset = isAnimated ? '0' : `${length}`;
-
-        svg.appendChild(line);
-      }
-    }
-  }
-
-  function getRectEdgePoint(rect, containerRect, angle) {
-    const cx = rect.left + rect.width / 2 - containerRect.left;
-    const cy = rect.top + rect.height / 2 - containerRect.top;
-    const w = rect.width / 2;
-    const h = rect.height / 2;
-
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-
-    const factor = Math.min(
-      Math.abs(w / (cos || 0.0001)),
-      Math.abs(h / (sin || 0.0001))
-    );
-
-    return {
-      x: cx + factor * cos,
-      y: cy + factor * sin
-    };
-  }
-
-  // IntersectionObserver for trigger animation on scroll (strictly when user scrolls to central node)
-  const diagramContainerEl = document.getElementById('risksDiagramContainer');
-  const coreNodeEl = document.querySelector('.core-node-inner');
-
-  if ('IntersectionObserver' in window && diagramContainerEl && coreNodeEl) {
-    const diagramObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        // Trigger only when the central core node enters comfortable viewing range (below header, above fold)
-        if (entry.isIntersecting) {
-          const rect = coreNodeEl.getBoundingClientRect();
-          if (rect.top <= window.innerHeight * 0.75 && rect.top > 60) {
-            diagramContainerEl.classList.add('animated');
-            diagramObserver.unobserve(coreNodeEl);
-          }
-        }
-      });
-    }, { 
-      threshold: 0.2,
-      rootMargin: '0px 0px -120px 0px'
-    });
-    diagramObserver.observe(coreNodeEl);
-
-    // Scroll listener fallback for smooth trigger when user scrolls into view
-    const scrollTrigger = () => {
-      if (diagramContainerEl.classList.contains('animated')) {
-        window.removeEventListener('scroll', scrollTrigger);
-        return;
-      }
-      const rect = coreNodeEl.getBoundingClientRect();
-      if (rect.top > 60 && rect.top <= window.innerHeight * 0.75) {
-        diagramContainerEl.classList.add('animated');
-        window.removeEventListener('scroll', scrollTrigger);
-      }
-    };
-    window.addEventListener('scroll', scrollTrigger, { passive: true });
-  } else if (diagramContainerEl) {
-    diagramContainerEl.classList.add('animated');
-  }
-
-  // Initial draw and resize handlers
-  drawDiagramLines();
-  window.addEventListener('resize', drawDiagramLines);
-  setTimeout(drawDiagramLines, 100);
-
-  // 6. Interactive Regional Map Controller
-  const mapViewport = document.getElementById('mapViewport');
-  const mapBadge = document.getElementById('mapBadgeOverlay');
-  const regionItems = document.querySelectorAll('.region-item');
-  const neighborPaths = document.querySelectorAll('.neighbor-path');
-  const yaroslavlPath = document.getElementById('yaroslavlOblastPath');
-  const russiaContour = document.getElementById('russiaContourPath');
-  const pinRybinsk = document.getElementById('pinRybinsk');
-  const pinYaroslavl = document.getElementById('pinYaroslavl');
-
-  const mapStates = {
-    rybinsk: {
-      transform: 'matrix(2.3, 0, 0, 2.3, -450, -220)',
-      badge: 'РЫБИНСК: ГЛАВНЫЙ ОФИС',
-      action: () => {
-        if (yaroslavlPath) yaroslavlPath.classList.add('active');
-        if (neighborPaths) neighborPaths.forEach(p => p.classList.remove('active'));
-        if (russiaContour) russiaContour.classList.remove('active');
-        if (pinRybinsk) pinRybinsk.classList.add('active');
-        if (pinYaroslavl) pinYaroslavl.classList.remove('active');
-      }
-    },
-    yaroslavl: {
-      transform: 'matrix(2.3, 0, 0, 2.3, -560, -310)',
-      badge: 'ЯРОСЛАВЛЬ: ВЫЕЗД СПЕЦИАЛИСТОВ НА ПРЕДПРИЯТИЯ',
-      action: () => {
-        if (yaroslavlPath) yaroslavlPath.classList.add('active');
-        if (neighborPaths) neighborPaths.forEach(p => p.classList.remove('active'));
-        if (russiaContour) russiaContour.classList.remove('active');
-        if (pinRybinsk) pinRybinsk.classList.remove('active');
-        if (pinYaroslavl) pinYaroslavl.classList.add('active');
-      }
-    },
-    oblast: {
-      transform: 'matrix(1.65, 0, 0, 1.65, -250, -140)',
-      badge: 'ЯРОСЛАВСКАЯ ОБЛАСТЬ: 100% ОХВАТ',
-      action: () => {
-        if (yaroslavlPath) yaroslavlPath.classList.add('active');
-        if (neighborPaths) neighborPaths.forEach(p => p.classList.remove('active'));
-        if (russiaContour) russiaContour.classList.remove('active');
-        if (pinRybinsk) pinRybinsk.classList.add('active');
-        if (pinYaroslavl) pinYaroslavl.classList.add('active');
-      }
-    },
-    neighbors: {
-      transform: 'matrix(1.2, 0, 0, 1.2, -60, -30)',
-      badge: 'СОСЕДНИЕ РЕГИОНЫ: ВЫЕЗД ИНЖЕНЕРОВ',
-      action: () => {
-        if (yaroslavlPath) yaroslavlPath.classList.add('active');
-        if (neighborPaths) neighborPaths.forEach(p => p.classList.add('active'));
-        if (russiaContour) russiaContour.classList.remove('active');
-        if (pinRybinsk) pinRybinsk.classList.add('active');
-        if (pinYaroslavl) pinYaroslavl.classList.add('active');
-      }
-    },
-    russia: {
-      transform: 'matrix(0.85, 0, 0, 0.85, 60, 40)',
-      badge: 'ВСЯ РОССИЯ: ДИСТАНЦИОННЫЙ ФОРМАТ',
-      action: () => {
-        if (yaroslavlPath) yaroslavlPath.classList.add('active');
-        if (neighborPaths) neighborPaths.forEach(p => p.classList.add('active'));
-        if (russiaContour) russiaContour.classList.add('active');
-        if (pinRybinsk) pinRybinsk.classList.add('active');
-        if (pinYaroslavl) pinYaroslavl.classList.add('active');
-      }
-    }
-  };
-
-  function setMapState(stateKey) {
-    const config = mapStates[stateKey];
-    if (!config) return;
-
-    if (mapViewport) {
-      mapViewport.style.transform = config.transform;
-    }
-    if (mapBadge) {
-      mapBadge.textContent = config.badge;
-    }
-
-    config.action();
-
-    regionItems.forEach(item => {
-      if (item.getAttribute('data-map-state') === stateKey) {
-        item.classList.add('active');
-      } else {
-        item.classList.remove('active');
-      }
-    });
-  }
-
-  regionItems.forEach(item => {
-    item.addEventListener('mouseenter', () => {
-      const stateKey = item.getAttribute('data-map-state');
-      setMapState(stateKey);
-    });
-
-    item.addEventListener('click', () => {
-      const stateKey = item.getAttribute('data-map-state');
-      setMapState(stateKey);
-    });
-  });
-
-  // Default initial state
-  setMapState('rybinsk');
-
-  /* ==========================================================================
-     BLOG SLIDER CONTROLLER
-     ========================================================================== */
-  const blogSliderWrapper = document.getElementById('blogSliderWrapper');
-  const blogPrevBtn = document.getElementById('blogPrevBtn');
-  const blogNextBtn = document.getElementById('blogNextBtn');
-
-  if (blogSliderWrapper && blogPrevBtn && blogNextBtn) {
-    const scrollAmount = 364; // width of card (340px) + gap (24px)
-
-    blogPrevBtn.addEventListener('click', () => {
-      blogSliderWrapper.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-    });
-
-    blogNextBtn.addEventListener('click', () => {
-      blogSliderWrapper.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    });
-
-    function updateSliderButtons() {
-      const maxScrollLeft = blogSliderWrapper.scrollWidth - blogSliderWrapper.clientWidth;
-      blogPrevBtn.disabled = blogSliderWrapper.scrollLeft <= 10;
-      blogNextBtn.disabled = blogSliderWrapper.scrollLeft >= maxScrollLeft - 10;
-    }
-
-    blogSliderWrapper.addEventListener('scroll', updateSliderButtons);
-    window.addEventListener('resize', updateSliderButtons);
-    updateSliderButtons();
-
-    async function fetchPublishedArticles() {
-      // Look for .blog-grid both inside the wrapper and anywhere in the document
-      const blogGrid = blogSliderWrapper.querySelector('.blog-grid') || document.querySelector('.blog-grid');
-      if (!blogGrid) return;
-      try {
-        const res = await fetch('/api/articles');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.success && Array.isArray(data.articles) && data.articles.length > 0) {
-          blogGrid.innerHTML = data.articles.map(a => {
-            // Ensure URL is root-relative for links from index.html
-            const href = a.url.startsWith('/') ? a.url : '/' + a.url;
-            return `<a href="${href}" target="_blank" rel="noopener" class="blog-card">
-              <div>
-                <h3>${escapeHtml(a.title)}</h3>
-              </div>
-              <div class="blog-footer">${escapeHtml(a.created_at)} • ${escapeHtml(a.badge)}</div>
-            </a>`;
-          }).join('');
-          updateSliderButtons();
-        }
-      } catch (err) {
-        console.error('[Blog Slider] Failed to load articles:', err);
-        // Keep static fallback cards on fetch error
-      }
-    }
-
-    function escapeHtml(str) {
-      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    fetchPublishedArticles();
-  }
-
-  /* ==========================================================================
-     COOKIE CONSENT CONTROLLER (152-FZ)
-     ========================================================================== */
-  const cookieBanner = document.getElementById('cookieBanner');
-  const cookieAcceptBtn = document.getElementById('cookieAcceptBtn');
-
-  if (cookieBanner && cookieAcceptBtn) {
-    const isConsentGiven = localStorage.getItem('profexpert_cookie_consent');
-    if (!isConsentGiven) {
-      setTimeout(() => {
-        cookieBanner.classList.add('show');
-      }, 1000);
-    }
-
-    cookieAcceptBtn.addEventListener('click', () => {
-      localStorage.setItem('profexpert_cookie_consent', 'true');
-      cookieBanner.classList.remove('show');
-    });
-  }
-
-  /* ==========================================================================
-     AUTHENTIC IZOMETRY SMOOTHSCROLL ENGINE (EXACT MATCH FROM IZOMETRY.RU)
-     ========================================================================== */
-  if (typeof SmoothScroll === 'function') {
-    SmoothScroll({
-      // Время анимации (в мс):
-      animationTime    : 900,
-      // Размер шага (в пикселях):
-      stepSize         : 70,
-
-      // Ускорение:
-      accelerationDelta : 30,  
-      accelerationMax   : 2,   
-
-      // Поддержка клавиатуры:
-      keyboardSupport   : true,  
-      arrowScroll       : 50,
-
-      // Pulse (алгоритм физики сглаживания):
-      pulseAlgorithm   : true,
-      pulseScale       : 4,
-      pulseNormalize   : 1,
-
-      // Поддержка тачпада:
-      touchpadSupport   : true,
-    });
-  }
-});
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Mobile Menu Toggle
+  const mobileToggle = document.getElementById('mobileToggle');
+  const navMenu = document.getElementById('navMenu');
+
+  if (mobileToggle && navMenu) {
+    mobileToggle.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+      mobileToggle.classList.toggle('active');
+    });
+
+    // Close menu when clicking links
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+        mobileToggle.classList.remove('active');
+      });
+    });
+  }
+
+  // 2. Modal Controller
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const openModalBtns = document.querySelectorAll('.js-open-modal');
+  const modalTitle = document.getElementById('modalTitle');
+
+  openModalBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const customTitle = btn.getAttribute('data-modal-title');
+      if (customTitle && modalTitle) {
+        modalTitle.textContent = customTitle;
+      }
+      if (modalOverlay) {
+        modalOverlay.classList.add('active');
+      }
+    });
+  });
+
+  if (modalCloseBtn) {
+    modalCloseBtn.addEventListener('click', () => {
+      if (modalOverlay) modalOverlay.classList.remove('active');
+    });
+  }
+
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        modalOverlay.classList.remove('active');
+      }
+    });
+  }
+
+  // 3. Form Submission Handling
+  const leadForm = document.getElementById('leadForm');
+  const toastSuccess = document.getElementById('toastSuccess');
+  const formConsent = document.getElementById('formConsent');
+
+  if (leadForm) {
+    leadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const nameInput = document.getElementById('formName');
+      const phoneInput = document.getElementById('formPhone');
+      const companyInput = document.getElementById('formCompany');
+
+      if (!phoneInput || !phoneInput.value.trim()) {
+        alert('Пожалуйста, введите ваш телефон.');
+        return;
+      }
+
+      if (formConsent && !formConsent.checked) {
+        alert('Пожалуйста, подтвердите согласие на обработку персональных данных.');
+        return;
+      }
+
+      const payload = {
+        name: nameInput ? nameInput.value.trim() : 'Аноним',
+        phone: phoneInput.value.trim(),
+        company: companyInput ? companyInput.value.trim() : '',
+        source: modalTitle ? modalTitle.textContent : 'Форма на сайте'
+      };
+
+      try {
+        const response = await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          if (typeof ym === 'function') {
+            ym(113672774, 'reachGoal', 'zayavka');
+          }
+          if (toastSuccess) {
+            toastSuccess.style.display = 'block';
+            toastSuccess.textContent = result.message || 'Заявка успешно отправлена!';
+          }
+          leadForm.reset();
+          if (formConsent) formConsent.checked = true;
+          setTimeout(() => {
+            if (toastSuccess) toastSuccess.style.display = 'none';
+            if (modalOverlay) modalOverlay.classList.remove('active');
+          }, 3000);
+        } else {
+          alert(result.error || 'Ошибка отправки заявки.');
+        }
+      } catch (err) {
+        if (typeof ym === 'function') {
+          ym(113672774, 'reachGoal', 'zayavka');
+        }
+        if (toastSuccess) {
+          toastSuccess.style.display = 'block';
+          toastSuccess.textContent = 'Заявка принята! Мы свяжемся с вами.';
+        }
+        leadForm.reset();
+        if (formConsent) formConsent.checked = true;
+        setTimeout(() => {
+          if (toastSuccess) toastSuccess.style.display = 'none';
+          if (modalOverlay) modalOverlay.classList.remove('active');
+        }, 3000);
+      }
+    });
+
+    // Track phone and email clicks in Metrika
+    document.querySelectorAll('a[href^="tel:"]').forEach(el => {
+      el.addEventListener('click', () => {
+        if (typeof ym === 'function') ym(113672774, 'reachGoal', 'phone_click');
+      });
+    });
+    document.querySelectorAll('a[href^="mailto:"]').forEach(el => {
+      el.addEventListener('click', () => {
+        if (typeof ym === 'function') ym(113672774, 'reachGoal', 'email_click');
+      });
+    });
+  }
+
+  // 5. Dynamic SVG Diagram Connecting Lines (Animated Red Threats & Green Solution)
+  function drawDiagramLines() {
+    const container = document.getElementById('risksDiagramContainer');
+    const svg = document.getElementById('diagramSvg');
+    const coreNode = document.querySelector('.core-node-inner');
+    const summaryCard = document.querySelector('.diagram-summary-card');
+    if (!container || !svg || !coreNode) return;
+
+    // Remove old lines, preserve defs
+    const defs = svg.querySelector('defs');
+    svg.innerHTML = '';
+    if (defs) svg.appendChild(defs);
+
+    // Hide SVG on small screens where grid breaks into single column
+    if (window.innerWidth <= 1024) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const coreRect = coreNode.getBoundingClientRect();
+
+    const coreCenter = {
+      x: coreRect.left + coreRect.width / 2 - containerRect.left,
+      y: coreRect.top + coreRect.height / 2 - containerRect.top
+    };
+
+    const isAnimated = container.classList.contains('animated');
+
+    // 1. Draw 6 incoming RED lines from risk cards to central node
+    const cards = container.querySelectorAll('.risk-node');
+    cards.forEach(card => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = {
+        x: cardRect.left + cardRect.width / 2 - containerRect.left,
+        y: cardRect.top + cardRect.height / 2 - containerRect.top
+      };
+
+      const angle = Math.atan2(coreCenter.y - cardCenter.y, coreCenter.x - cardCenter.x);
+
+      const cardEdge = getRectEdgePoint(cardRect, containerRect, angle);
+      const coreEdge = getRectEdgePoint(coreRect, containerRect, angle + Math.PI);
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', cardEdge.x);
+      line.setAttribute('y1', cardEdge.y);
+      line.setAttribute('x2', coreEdge.x);
+      line.setAttribute('y2', coreEdge.y);
+      line.setAttribute('stroke', '#dc2626');
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('marker-end', 'url(#arrowhead-red)');
+      line.classList.add('diagram-risk-line');
+
+      const length = Math.hypot(coreEdge.x - cardEdge.x, coreEdge.y - cardEdge.y);
+      line.style.strokeDasharray = `${length}`;
+      line.style.strokeDashoffset = isAnimated ? '0' : `${length}`;
+
+      svg.appendChild(line);
+    });
+
+    // 2. Draw 1 outgoing GREEN line from bottom of "ВАШ БИЗНЕС" to top of summary card
+    if (summaryCard) {
+      const summaryRect = summaryCard.getBoundingClientRect();
+      const startX = coreCenter.x;
+      const startY = coreRect.bottom - containerRect.top;
+      const endX = coreCenter.x;
+      const endY = summaryRect.top - containerRect.top;
+
+      if (endY > startY) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', startX);
+        line.setAttribute('y1', startY);
+        line.setAttribute('x2', endX);
+        line.setAttribute('y2', endY);
+        line.setAttribute('stroke', '#16a34a');
+        line.setAttribute('stroke-width', '2.5');
+        line.setAttribute('marker-end', 'url(#arrowhead-green)');
+        line.classList.add('diagram-solution-line');
+
+        const length = endY - startY;
+        line.style.strokeDasharray = `${length}`;
+        line.style.strokeDashoffset = isAnimated ? '0' : `${length}`;
+
+        svg.appendChild(line);
+      }
+    }
+  }
+
+  function getRectEdgePoint(rect, containerRect, angle) {
+    const cx = rect.left + rect.width / 2 - containerRect.left;
+    const cy = rect.top + rect.height / 2 - containerRect.top;
+    const w = rect.width / 2;
+    const h = rect.height / 2;
+
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    const factor = Math.min(
+      Math.abs(w / (cos || 0.0001)),
+      Math.abs(h / (sin || 0.0001))
+    );
+
+    return {
+      x: cx + factor * cos,
+      y: cy + factor * sin
+    };
+  }
+
+  // IntersectionObserver for trigger animation on scroll (strictly when user scrolls to central node)
+  const diagramContainerEl = document.getElementById('risksDiagramContainer');
+  const coreNodeEl = document.querySelector('.core-node-inner');
+
+  if ('IntersectionObserver' in window && diagramContainerEl && coreNodeEl) {
+    const diagramObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // Trigger only when the central core node enters comfortable viewing range (below header, above fold)
+        if (entry.isIntersecting) {
+          const rect = coreNodeEl.getBoundingClientRect();
+          if (rect.top <= window.innerHeight * 0.75 && rect.top > 60) {
+            diagramContainerEl.classList.add('animated');
+            diagramObserver.unobserve(coreNodeEl);
+          }
+        }
+      });
+    }, { 
+      threshold: 0.2,
+      rootMargin: '0px 0px -120px 0px'
+    });
+    diagramObserver.observe(coreNodeEl);
+
+    // Scroll listener fallback for smooth trigger when user scrolls into view
+    const scrollTrigger = () => {
+      if (diagramContainerEl.classList.contains('animated')) {
+        window.removeEventListener('scroll', scrollTrigger);
+        return;
+      }
+      const rect = coreNodeEl.getBoundingClientRect();
+      if (rect.top > 60 && rect.top <= window.innerHeight * 0.75) {
+        diagramContainerEl.classList.add('animated');
+        window.removeEventListener('scroll', scrollTrigger);
+      }
+    };
+    window.addEventListener('scroll', scrollTrigger, { passive: true });
+  } else if (diagramContainerEl) {
+    diagramContainerEl.classList.add('animated');
+  }
+
+  // Initial draw and resize handlers
+  drawDiagramLines();
+  window.addEventListener('resize', drawDiagramLines);
+  setTimeout(drawDiagramLines, 100);
+
+  // 6. Interactive Regional Map Controller
+  const mapViewport = document.getElementById('mapViewport');
+  const mapBadge = document.getElementById('mapBadgeOverlay');
+  const regionItems = document.querySelectorAll('.region-item');
+  const neighborPaths = document.querySelectorAll('.neighbor-path');
+  const yaroslavlPath = document.getElementById('yaroslavlOblastPath');
+  const russiaContour = document.getElementById('russiaContourPath');
+  const pinRybinsk = document.getElementById('pinRybinsk');
+  const pinYaroslavl = document.getElementById('pinYaroslavl');
+
+  const mapStates = {
+    rybinsk: {
+      transform: 'matrix(2.3, 0, 0, 2.3, -450, -220)',
+      badge: 'РЫБИНСК: ГЛАВНЫЙ ОФИС',
+      action: () => {
+        if (yaroslavlPath) yaroslavlPath.classList.add('active');
+        if (neighborPaths) neighborPaths.forEach(p => p.classList.remove('active'));
+        if (russiaContour) russiaContour.classList.remove('active');
+        if (pinRybinsk) pinRybinsk.classList.add('active');
+        if (pinYaroslavl) pinYaroslavl.classList.remove('active');
+      }
+    },
+    yaroslavl: {
+      transform: 'matrix(2.3, 0, 0, 2.3, -560, -310)',
+      badge: 'ЯРОСЛАВЛЬ: ВЫЕЗД СПЕЦИАЛИСТОВ НА ПРЕДПРИЯТИЯ',
+      action: () => {
+        if (yaroslavlPath) yaroslavlPath.classList.add('active');
+        if (neighborPaths) neighborPaths.forEach(p => p.classList.remove('active'));
+        if (russiaContour) russiaContour.classList.remove('active');
+        if (pinRybinsk) pinRybinsk.classList.remove('active');
+        if (pinYaroslavl) pinYaroslavl.classList.add('active');
+      }
+    },
+    oblast: {
+      transform: 'matrix(1.65, 0, 0, 1.65, -250, -140)',
+      badge: 'ЯРОСЛАВСКАЯ ОБЛАСТЬ: 100% ОХВАТ',
+      action: () => {
+        if (yaroslavlPath) yaroslavlPath.classList.add('active');
+        if (neighborPaths) neighborPaths.forEach(p => p.classList.remove('active'));
+        if (russiaContour) russiaContour.classList.remove('active');
+        if (pinRybinsk) pinRybinsk.classList.add('active');
+        if (pinYaroslavl) pinYaroslavl.classList.add('active');
+      }
+    },
+    neighbors: {
+      transform: 'matrix(1.2, 0, 0, 1.2, -60, -30)',
+      badge: 'СОСЕДНИЕ РЕГИОНЫ: ВЫЕЗД ИНЖЕНЕРОВ',
+      action: () => {
+        if (yaroslavlPath) yaroslavlPath.classList.add('active');
+        if (neighborPaths) neighborPaths.forEach(p => p.classList.add('active'));
+        if (russiaContour) russiaContour.classList.remove('active');
+        if (pinRybinsk) pinRybinsk.classList.add('active');
+        if (pinYaroslavl) pinYaroslavl.classList.add('active');
+      }
+    },
+    russia: {
+      transform: 'matrix(0.85, 0, 0, 0.85, 60, 40)',
+      badge: 'ВСЯ РОССИЯ: ДИСТАНЦИОННЫЙ ФОРМАТ',
+      action: () => {
+        if (yaroslavlPath) yaroslavlPath.classList.add('active');
+        if (neighborPaths) neighborPaths.forEach(p => p.classList.add('active'));
+        if (russiaContour) russiaContour.classList.add('active');
+        if (pinRybinsk) pinRybinsk.classList.add('active');
+        if (pinYaroslavl) pinYaroslavl.classList.add('active');
+      }
+    }
+  };
+
+  function setMapState(stateKey) {
+    const config = mapStates[stateKey];
+    if (!config) return;
+
+    if (mapViewport) {
+      mapViewport.style.transform = config.transform;
+    }
+    if (mapBadge) {
+      mapBadge.textContent = config.badge;
+    }
+
+    config.action();
+
+    regionItems.forEach(item => {
+      if (item.getAttribute('data-map-state') === stateKey) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
+
+  regionItems.forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      const stateKey = item.getAttribute('data-map-state');
+      setMapState(stateKey);
+    });
+
+    item.addEventListener('click', () => {
+      const stateKey = item.getAttribute('data-map-state');
+      setMapState(stateKey);
+    });
+  });
+
+  // Default initial state
+  setMapState('rybinsk');
+
+  /* ==========================================================================
+     BLOG SLIDER CONTROLLER
+     ========================================================================== */
+  const blogSliderWrapper = document.getElementById('blogSliderWrapper');
+  const blogPrevBtn = document.getElementById('blogPrevBtn');
+  const blogNextBtn = document.getElementById('blogNextBtn');
+
+  if (blogSliderWrapper && blogPrevBtn && blogNextBtn) {
+    function getScrollAmount() {
+      const card = blogSliderWrapper.querySelector('.blog-card');
+      if (card) {
+        const gap = parseInt(window.getComputedStyle(card.parentElement).gap || '24', 10) || 24;
+        return card.offsetWidth + gap;
+      }
+      return 340;
+    }
+
+    blogPrevBtn.addEventListener('click', () => {
+      blogSliderWrapper.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
+    });
+
+    blogNextBtn.addEventListener('click', () => {
+      blogSliderWrapper.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+    });
+
+    function updateSliderButtons() {
+      const maxScrollLeft = blogSliderWrapper.scrollWidth - blogSliderWrapper.clientWidth;
+      if (maxScrollLeft <= 5) {
+        blogPrevBtn.disabled = true;
+        blogNextBtn.disabled = true;
+      } else {
+        blogPrevBtn.disabled = blogSliderWrapper.scrollLeft <= 5;
+        blogNextBtn.disabled = blogSliderWrapper.scrollLeft >= maxScrollLeft - 5;
+      }
+    }
+
+    blogSliderWrapper.addEventListener('scroll', updateSliderButtons);
+    window.addEventListener('resize', updateSliderButtons);
+    updateSliderButtons();
+
+    async function fetchPublishedArticles() {
+      // Look for .blog-grid both inside the wrapper and anywhere in the document
+      const blogGrid = blogSliderWrapper.querySelector('.blog-grid') || document.querySelector('.blog-grid');
+      if (!blogGrid) return;
+      try {
+        const res = await fetch('/api/articles');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.success && Array.isArray(data.articles) && data.articles.length > 0) {
+          blogGrid.innerHTML = data.articles.map(a => {
+            // Ensure URL is root-relative for links from index.html
+            const href = a.url.startsWith('/') ? a.url : '/' + a.url;
+            return `<a href="${href}" target="_blank" rel="noopener" class="blog-card">
+              <div>
+                <h3>${escapeHtml(a.title)}</h3>
+              </div>
+              <div class="blog-footer">${escapeHtml(a.created_at)} • ${escapeHtml(a.badge)}</div>
+            </a>`;
+          }).join('');
+          updateSliderButtons();
+        }
+      } catch (err) {
+        console.error('[Blog Slider] Failed to load articles:', err);
+        // Keep static fallback cards on fetch error
+      }
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    fetchPublishedArticles();
+  }
+
+  /* ==========================================================================
+     COOKIE CONSENT CONTROLLER (152-FZ)
+     ========================================================================== */
+  const cookieBanner = document.getElementById('cookieBanner');
+  const cookieAcceptBtn = document.getElementById('cookieAcceptBtn');
+
+  if (cookieBanner && cookieAcceptBtn) {
+    const isConsentGiven = localStorage.getItem('profexpert_cookie_consent');
+    if (!isConsentGiven) {
+      setTimeout(() => {
+        cookieBanner.classList.add('show');
+      }, 1000);
+    }
+
+    cookieAcceptBtn.addEventListener('click', () => {
+      localStorage.setItem('profexpert_cookie_consent', 'true');
+      cookieBanner.classList.remove('show');
+    });
+  }
+
+  /* ==========================================================================
+     AUTHENTIC IZOMETRY SMOOTHSCROLL ENGINE (EXACT MATCH FROM IZOMETRY.RU)
+     ========================================================================== */
+  if (typeof SmoothScroll === 'function') {
+    SmoothScroll({
+      // Время анимации (в мс):
+      animationTime    : 900,
+      // Размер шага (в пикселях):
+      stepSize         : 70,
+
+      // Ускорение:
+      accelerationDelta : 30,  
+      accelerationMax   : 2,   
+
+      // Поддержка клавиатуры:
+      keyboardSupport   : true,  
+      arrowScroll       : 50,
+
+      // Pulse (алгоритм физики сглаживания):
+      pulseAlgorithm   : true,
+      pulseScale       : 4,
+      pulseNormalize   : 1,
+
+      // Поддержка тачпада:
+      touchpadSupport   : true,
+    });
+  }
+});
